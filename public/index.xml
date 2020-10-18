@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>great A</title>
+    <link>/</link>
+    <description>Recent content on great A</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 07 Dec 2019 14:20:37 -0500</lastBuildDate>
+    
+	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Big Picture</title>
+      <link>/big_picture/</link>
+      <pubDate>Sat, 07 Dec 2019 14:20:37 -0500</pubDate>
+      
+      <guid>/big_picture/</guid>
+      <description>Every year, hundreds of thousands of people come to Boston and its surrounding areas. Drawn by its historic charm, its mix of diverse cultures, and its top-tier universities, tourists are always travelling to Bay State capital. While Boston’s many new shiny hotels offer a lavish stay, many people turn to other places of residences for their vacations. Since 2008, guests have been able to use Airbnb to travel in a unique, personalized way, staying in the homes and rooms of locals.</description>
+    </item>
+    
+    <item>
+      <title>Modeling and Inference</title>
+      <link>/modeling/</link>
+      <pubDate>Fri, 06 Dec 2019 09:23:49 -0500</pubDate>
+      
+      <guid>/modeling/</guid>
+      <description>As explained on the EDA page, after the plotting of several variables, we chose five statistically significant covariates as the final ones for further analysis. Our main goal was to determine which covariates affect the price of Airbnbs in Boston and to build a regression model. In this page, we will use Minimum AIC as our model selection method. We expect to figure out the best model based on those five covariates: accommodate, availability_30, and number of reviews, room_type, cancellation_policy.</description>
+    </item>
+    
+    <item>
+      <title>EDA - Listing Descriptions</title>
+      <link>/11/17/eda/</link>
+      <pubDate>Sun, 17 Nov 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/11/17/eda/</guid>
+      <description>I wanted to begin our investigation of the textual data included in our dataset. One important aspect of an AirBnB listing is the description. For this EDA, I decided to explore how the length of a description is related to how popular a listing may be with guests. Two variables that are related to this are Number of Reviews, which implies the number of people who have stayed at this listing, and Availability, which will indicate how many days the are open for the listing, with less availability suggesting more bookings.</description>
+    </item>
+    
+    <item>
+      <title>How is accommondate number asssociate with airbnb price in Boston?</title>
+      <link>/11/14/yu-lab-11-17/</link>
+      <pubDate>Thu, 14 Nov 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/11/14/yu-lab-11-17/</guid>
+      <description>For the boston airbnb dataset, I’m performing a relationship between accommodates number and airbnb price. Here are the preliminary analysis of airbnb price:
+After boxploting all data by grouping accommodates number from 0 - 16, there is an approximately positive relationship between accommodates number and price as the accommodates number increase the price increase too. However, there are two odds data as the accommodates nunmber = 9 or 16, those two data are lower than $250 per day, which usually are the price for 3-5 people.</description>
+    </item>
+    
+    <item>
+      <title>the EDA of price and cleaning fee</title>
+      <link>/11/14/hi-i-am-yunhong/</link>
+      <pubDate>Thu, 14 Nov 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/11/14/hi-i-am-yunhong/</guid>
+      <description>In this EDA, I try to anaylze the relationship between price and cleaning fee.
+From the graph, I conclue that there is no relationship between cleaing fee and price. The point is scattered in the plot. Thus, I consider to remove this variable or to make some transformation. I will also try to find which variables are correlated with the cleaning fee.</description>
+    </item>
+    
+    <item>
+      <title>Yunhong Yang.Rmd</title>
+      <link>/11/14/lab-yunhong-yang/</link>
+      <pubDate>Thu, 14 Nov 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/11/14/lab-yunhong-yang/</guid>
+      <description>In this EDA, I try to anaylze the relationship between price and cleaning fee. knitr::include_graphics(rep(&amp;lsquo;/images/pic3.png&amp;rsquo;, 1)) From the graph, I conclue that there is no relationship between cleaing fee and price. The point is scattered in the plot. Thus, I consider to remove this variable or to make some transformation. I will also try to find which variables are correlated with the cleaning fee.</description>
+    </item>
+    
+    <item>
+      <title>Idea of load data on lab</title>
+      <link>/11/11/idea-of-load-data-on-lab/</link>
+      <pubDate>Mon, 11 Nov 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/11/11/idea-of-load-data-on-lab/</guid>
+      <description>load the data in R: We will download the related csv files and load them into our final project directory. Look for any unusual values or codings in the data: Many variables in the dataset are urls for the listing, pictures, or host. We do not believe this will be useful in our analysis so these were removed. Other variables had some unusual values that we needed to check. For example, there were many formattings and spelling issues in the strings for the variable “city” and “smart_location”.</description>
+    </item>
+    
+    <item>
+      <title>Lab brainstorm for final project</title>
+      <link>/10/21/lab-brainstorm-for-final-project/</link>
+      <pubDate>Mon, 21 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/10/21/lab-brainstorm-for-final-project/</guid>
+      <description>At the beginning, we have several different preferences about the final project. Someone would like to detect the environment related data, and some people prefer the NBA shooting numbers, mobile app downloading, and success elements of the chest game. Finally, after a discussion and carefully datasets searching, we decide to work on the Boston Airbnb dataset.
+ A link to data: https://www.kaggle.com/airbnb/boston Since 2008, guests and hosts have used Airbnb to travel in a more unique, personalized way.</description>
+    </item>
+    
+    <item>
+      <title>Hi I&#39;m Kelly</title>
+      <link>/10/20/hi-i-m-kelly/</link>
+      <pubDate>Sun, 20 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/10/20/hi-i-m-kelly/</guid>
+      <description>Hi there! My name is Kelly Huang and I am a senior majoring in Statistics. This is my last semester at BU and I am very excited to be working with this group on one of my final undergraduate projects.
+At the moment, I am unsure what data I want to study for this project. There are many things that interest me and there is likely very much data on a broad range of topics that would be suitable for this project.</description>
+    </item>
+    
+    <item>
+      <title>Hi I&#39;m Yansong Bai</title>
+      <link>/10/17/hi-i-m-yansong-bai/</link>
+      <pubDate>Thu, 17 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/10/17/hi-i-m-yansong-bai/</guid>
+      <description>name: Yansong Bai major: computer science status: Junior Thought:I want to explore the latest season of NBA champion team&amp;rsquo;s Shooting percentage in each game for each player. Work for final project: Complete Big Picutre part.</description>
+    </item>
+    
+    <item>
+      <title>HI I&#39;m Yu</title>
+      <link>/10/17/hi-i-m-yu/</link>
+      <pubDate>Thu, 17 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/10/17/hi-i-m-yu/</guid>
+      <description>Hello, I&amp;rsquo;m Yu Li. I&amp;rsquo;m a junior student at Boston University studying Statistics and Economics. I&amp;rsquo;m living off the campus.
+I am planning to explore the state of the market over time and try to predict where it is headed based on the dataset of &amp;ldquo;17K Mobile Strategy Games&amp;rdquo;.</description>
+    </item>
+    
+    <item>
+      <title>Hi I&#39;m Yunhong Yang</title>
+      <link>/10/17/hi-i-m-yunhong-yang/</link>
+      <pubDate>Thu, 17 Oct 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/10/17/hi-i-m-yunhong-yang/</guid>
+      <description>Hello, I am Yunhong Yang. I am a junior student in statistics major. My teammates are super great!
+I am interested in exploring the Chess Game Dataset(Lichess), and studying how factors affect a game.</description>
+    </item>
+    
+    <item>
+      <title>Exploratory Data Analysis</title>
+      <link>/eda/</link>
+      <pubDate>Thu, 03 Oct 2019 16:56:11 -0400</pubDate>
+      
+      <guid>/eda/</guid>
+      <description>Introduction In this project we will analyze the Boston Airbnb dataset. We will download the related csv files and load them into our final project directory. The data is in the file “listings.csv”. Given that Boston is a “college city” and its tourism industry thrives on its remarkable historical culture as well, it is a city that attracts many visitors looking for places to stay. We were curious to look into the Airbnb listings that Boston has to offer, especially their prices since Boston has high housing prices in general.</description>
+    </item>
+    
+    <item>
+      <title>About</title>
+      <link>/about/</link>
+      <pubDate>Thu, 05 May 2016 21:48:51 -0700</pubDate>
+      
+      <guid>/about/</guid>
+      <description>This is a website for the final project for MA[46]15 Data Science with R by Team Great A. The members of this team are below.
+Yu Li Yu Li is a junior student in Stats and Econ. She wrote the EDA page and contributed to the comment of the EDA and half of comment of Modeling page. She focused on adding more details and summary in EDA. She also went through the structure and comment of the whole project, https://github.</description>
+    </item>
+    
+    <item>
+      <title>Data</title>
+      <link>/data/</link>
+      <pubDate>Thu, 05 May 2016 21:48:51 -0700</pubDate>
+      
+      <guid>/data/</guid>
+      <description>Our project is based on the dataset entitled Boston Airbnb Open Data which can be found at https://www.kaggle.com/airbnb/boston. It is originally from Inside Airbnb, which has compiled the publicly available information on Airbnb site.
+This dataset entitled “listings” includes 3585 listings found on AirBnB in 2015 that are in the Boston area and provides a wide range of information for each listing. All the information that the hosts provide about their listing are included in the dataset.</description>
+    </item>
+    
+    <item>
+      <title>Data</title>
+      <link>/05/05/data/</link>
+      <pubDate>Thu, 05 May 2016 21:48:51 -0700</pubDate>
+      
+      <guid>/05/05/data/</guid>
+      <description>Our project is based on the dataset entitled Boston Airbnb Open Data which can be found at https://www.kaggle.com/airbnb/boston. It is originally from Inside Airbnb, which has compiled the publicly available information on Airbnb site.
+This dataset includes 3585 listings from AirBnB that are in the Boston area and provides a wide range of information for each listing. All the information that the hosts provide about their listing are included in the dataset.</description>
+    </item>
+    
+    <item>
+      <title>About</title>
+      <link>/01/01/about/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/01/01/about/</guid>
+      <description>This is a website for the final project for MA[46]15 Data Science with R by Team Great A. The members of this team are below.
+Yu Li Yu Li is a junior student in Stats and Econ. https://github.com/yuli1022
+Yunhong Yang Yunhong Yang is a junior student in Stats. https://github.com/yunhongyang
+Kelly Huang Kelly is a senior at Boston University studying Mathematics &amp;amp; Statistics. http://github.com/kellyhuang20
+Yansong Bai Yansong Bai is a junior student in CS.</description>
+    </item>
+    
+  </channel>
+</rss>

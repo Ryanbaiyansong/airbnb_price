@@ -1,0 +1,52 @@
+---
+date: 2016-05-05T21:48:51-07:00
+title: Data
+featured_image: "/images/first.png"
+---
+
+
+
+<p>Our project is based on the dataset entitled Boston Airbnb Open Data which can be found at <a href="https://www.kaggle.com/airbnb/boston" class="uri">https://www.kaggle.com/airbnb/boston</a>. It is originally from Inside Airbnb, which has compiled the publicly available information on Airbnb site.</p>
+<p>This dataset entitled “listings” includes 3585 listings found on AirBnB in 2015 that are in the Boston area and provides a wide range of information for each listing. All the information that the hosts provide about their listing are included in the dataset. Important features about the property itself, like location, size, and amenities, as well as prices/fees and availability, are also given. There is information about the hosts themselves, like how many listings they have, their verifications, response rates, etc. Finally there is data on the reviews for the listing, including many rating scores and the number of reviews a listing has.</p>
+<p>All the descriptions the hosts provide for their listing about the space, neighborhood, transit, house rules, etc. is also included in the dataset. Thus there is a portion of the dataset that is only textual data.</p>
+<div id="data-importing-and-cleaning" class="section level2">
+<h2>Data Importing and Cleaning</h2>
+<p>The data can easily be imported into R using the read_csv function as it is mostly very clean. However, it is a large data set and not all the variables are useful. There are many that do not provide information that would be useful to our analysis, so these were removed. Many urls for the listing and pictures were included in the dataset. Some variables were repetitive; for example, there are multiple columns for location that provide the same information. Additionally since all the listings are located in the Boston area, variables like state and country are not useful. All the listings had the same value for some variables, like “experiences offered”, or were all missing data for variables like “license” and “jusisdiction_names”. Thus these were removed as well.</p>
+<p>Other variables had unusual values that needed to be checked. For example, there were many formattings and spelling issues in the strings for the variable “city” and “smart_location”. Since we know that all the listings are located in Boston, and since there are many other variables that describe the neighborhood in which it is located, these columns were removed. There were a few listings that recorded the full zipcode, instead of the first five digits, which needed to be standardized by simply subsetting the string. Some numeric variables also had unusual values.</p>
+<p>Some values were recorded in dollars or percentage and were thus parsed as strings. These had to be converted to a number. Some missing data also had to be replaced with zeros, like for variables “cleaning fee” and “security deposit”.</p>
+<p>The textual data that is available in the dataset is not in a very usable format yet and will require some more tidying before we can analyze the texts. For simple textual analysis, we computed the length of descriptions and counted the frequency of certain words.</p>
+<pre class="r"><code>library(tidyverse)
+library(readr)
+# read in data
+boston &lt;- read_csv(&#39;listings.csv&#39;)
+
+# select useful columns
+boston &lt;- select(boston, -market, -smart_location, -city, -neighbourhood, -license, -jurisdiction_names, -neighbourhood_group_cleansed, -listing_url, -medium_url, -host_url, -scrape_id, -last_scraped, -experiences_offered, -thumbnail_url, -picture_url, -xl_picture_url, -host_name, -state, -country, -country_code, -host_listings_count, -has_availability)
+
+# clean
+boston &lt;- mutate(boston, host_response_rate=parse_number(host_response_rate), host_acceptance_rate=parse_number(host_acceptance_rate), zipcode=substr(zipcode, 1, 5), price=parse_number(price), weekly_price=parse_number(weekly_price), monthly_price=parse_number(monthly_price), security_deposit=parse_number(replace_na(security_deposit, 0)), cleaning_fee=parse_number(replace_na(cleaning_fee, 0)))</code></pre>
+</div>
+<div id="summary-statistics" class="section level2">
+<h2>Summary statistics</h2>
+<p>Below we include some summary statistics about the listings in our data set.</p>
+<pre class="r"><code>boston %&gt;% ggplot(aes(price)) + geom_histogram(binwidth=50) + labs(title=&quot;Boston Airbnb Prices&quot;, x=&quot;Price&quot;, y = &quot;Count&quot;) + theme_bw()</code></pre>
+<p><img src="/data_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>The average price of a listing in Boston is $173.90. The most expensive listing was priced at $4000, but most are less than $500.</p>
+<pre class="r"><code>boston %&gt;% ggplot(aes(review_scores_rating)) + geom_histogram(binwidth=5) + labs(title=&quot;Boston Airbnb Review Ratings&quot;, x=&quot;Review Rating&quot;, y = &quot;Count&quot;) + theme_bw()</code></pre>
+<p><img src="/data_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>The average listing had a review rating of 91.92. The lowest score a listing recieved was 20, but it most listings were given high marks. 813 of the listings did not have rating.</p>
+<pre class="r"><code>boston %&gt;% group_by(room_type) %&gt;% summarize(count=n()) %&gt;% ggplot(aes(room_type, count)) + geom_bar(stat=&#39;identity&#39;, aes(fill=room_type)) + labs(title=&quot;Room Type Offered&quot;, x=&quot;Room Type&quot;, y=&quot;Count&quot;) + geom_text(aes(label=count, vjust=-0.1)) + theme_bw()</code></pre>
+<p><img src="/data_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<pre class="r"><code>cate_dt_1&lt;-group_by(boston, room_type) %&gt;% summarise(Count = n(), Mean = mean(price, na.rm = TRUE),SD = sd(price, na.rm = TRUE))
+cate_dt_1</code></pre>
+<pre><code>## # A tibble: 3 x 4
+##   room_type       Count  Mean    SD
+##   &lt;chr&gt;           &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 Entire home/apt  2127 227.  158. 
+## 2 Private room     1378  96.0  85.1
+## 3 Shared room        80  92.8 109.</code></pre>
+<p>Most listings on Airbnb are for entire properties. There are also a good number of private rooms that are offered, but there are not many shared rooms in comparison.The mean of private rooms and shared rooms are closed. For these reasons, we combined private rooms and shared rooms into one group. Now, the two categories for Room Type are Entire House/Apartment and Room.</p>
+<pre class="r"><code>boston %&gt;% group_by(neighbourhood_cleansed) %&gt;% summarize(count=n()) %&gt;% ggplot(aes(neighbourhood_cleansed, count)) + geom_bar(stat=&#39;identity&#39;) + labs(title=&quot;Neighbourhood&quot;, x=&quot;Neighborhood&quot;, y=&quot;Count&quot;) + geom_text(aes(label=count, hjust=-0.1), size=2.5) + theme_bw() + coord_flip()</code></pre>
+<p><img src="/data_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p>There are listings in most of Boston’s neighborhoods though numbers vary. Larger, residential neighborhoods seem to have more listings, but the number may also depend on proximity to the center of the city.</p>
+</div>

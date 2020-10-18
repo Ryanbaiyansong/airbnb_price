@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>great A  | Exploratory Data Analysis</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="generator" content="Hugo 0.58.3" />
+    
+    
+      <META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
+    
+
+    
+    
+      <link href="/dist/css/app.d98f2eb6bcd1eaedb7edf166bd16af26.css" rel="stylesheet">
+    
+
+    
+
+    
+      
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+
+    
+
+    
+    
+    <meta property="og:title" content="Exploratory Data Analysis" />
+<meta property="og:description" content="Introduction In this project we will analyze the Boston Airbnb dataset. We will download the related csv files and load them into our final project directory. The data is in the file “listings.csv”. Given that Boston is a “college city” and its tourism industry thrives on its remarkable historical culture as well, it is a city that attracts many visitors looking for places to stay. We were curious to look into the Airbnb listings that Boston has to offer, especially their prices since Boston has high housing prices in general." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/eda/" />
+<meta property="article:published_time" content="2019-10-03T16:56:11-04:00" />
+<meta property="article:modified_time" content="2019-10-03T16:56:11-04:00" />
+<meta itemprop="name" content="Exploratory Data Analysis">
+<meta itemprop="description" content="Introduction In this project we will analyze the Boston Airbnb dataset. We will download the related csv files and load them into our final project directory. The data is in the file “listings.csv”. Given that Boston is a “college city” and its tourism industry thrives on its remarkable historical culture as well, it is a city that attracts many visitors looking for places to stay. We were curious to look into the Airbnb listings that Boston has to offer, especially their prices since Boston has high housing prices in general.">
+
+
+<meta itemprop="datePublished" content="2019-10-03T16:56:11-04:00" />
+<meta itemprop="dateModified" content="2019-10-03T16:56:11-04:00" />
+<meta itemprop="wordCount" content="1136">
+
+
+
+<meta itemprop="keywords" content="" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Exploratory Data Analysis"/>
+<meta name="twitter:description" content="Introduction In this project we will analyze the Boston Airbnb dataset. We will download the related csv files and load them into our final project directory. The data is in the file “listings.csv”. Given that Boston is a “college city” and its tourism industry thrives on its remarkable historical culture as well, it is a city that attracts many visitors looking for places to stay. We were curious to look into the Airbnb listings that Boston has to offer, especially their prices since Boston has high housing prices in general."/>
+
+
+
+  </head>
+
+  <body class="ma0 avenir bg-near-white">
+
+    
+
+  <header>
+    <div class="bg-navy">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l justify-between items-center center">
+    <a href="/" class="f3 fw2 hover-white no-underline white-90 dib">
+      great A
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+        <ul class="pl0 mr3">
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="/about/" title="About page">
+              About
+            </a>
+          </li>
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="/big_picture/" title="Big Picture page">
+              Big Picture
+            </a>
+          </li>
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="/data/" title="Data page">
+              Data
+            </a>
+          </li>
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="/eda/" title="EDA page">
+              EDA
+            </a>
+          </li>
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="/modeling/" title="Modeling page">
+              Modeling
+            </a>
+          </li>
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="/post/" title="Posts page">
+              Posts
+            </a>
+          </li>
+          
+        </ul>
+      
+      
+
+
+
+
+
+
+
+
+
+
+
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+    <main class="pb7" role="main">
+      
+  <div class="flex-l mt2 mw8 center">
+    <article class="center cf pv5 ph3 ph4-ns mw7">
+      <header>
+        <p class="f6 b helvetica tracked">
+          
+        </p>
+        <h1 class="f1">
+          Exploratory Data Analysis
+        </h1>
+      </header>
+      <div class="nested-copy-line-height lh-copy f4 nested-links nested-img mid-gray">
+        
+
+
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>In this project we will analyze the Boston Airbnb dataset. We will download the related csv files and load them into our final project directory. The data is in the file “listings.csv”. Given that Boston is a “college city” and its tourism industry thrives on its remarkable historical culture as well, it is a city that attracts many visitors looking for places to stay. We were curious to look into the Airbnb listings that Boston has to offer, especially their prices since Boston has high housing prices in general. While our individual blogs posts contain exploratory data analyses that investigate other relationships in the data set, this page serves to show the analysis that is most pertinent to our main goal of investigating the price of Airbnbs in Boston and finding the most useful covariates for price prediction.</p>
+<p>As seen in the summary statistics on the Data Description page, very few Airbnbs have prices higher than $1500. The two observations with prices in the $3000-4000 range are outliers and filtered out.</p>
+<p><img src="/images/map.png" width="32.8%" />
+This map illustrates the location of the Airbnb listings. The darker blue indicates that there are more Airbnbs in that region. The red points are the accurate positions of Airbnbs.</p>
+</div>
+<div id="preliminary-analysis-and-problems" class="section level1">
+<h1>Preliminary Analysis and Problems</h1>
+<p>Firstly, we selected several variables that are possibly related to price based on our intuition and tested their correlation. These variables included neighborhood, room type, property type, accmmodation number, customer feedback, cleaning fee, and response rate, etc. For each of these variables, we plotted them against price individually with boxplots, expecting to see that all of those variables have clear relationships with price. After the this plotting, we had an initial understanding of each variable, though some results were unexpected.</p>
+<p>As shown in Figure 1, by grouping <code>accommodates</code> (the number of people the listing can accommodate) from 0 - 16, we see that there is a slight positive relationship between <code>accommodates</code> and price. We would expect the price to increase with more people staying in the home. Even though there are some outliers and each <code>accommodate</code> group has a different variance, there is still good initial evidence to predict that the accomodation number is associated with airbnb price.</p>
+<pre class="r"><code>boston %&gt;% subset(price &lt;1000) %&gt;%  group_by(accommodates) %&gt;%  mutate(n = n()) %&gt;%  ggplot(aes(group = accommodates, x = accommodates, y = price)) + geom_boxplot(aes(fill = n)) + labs (x=&quot;Accommodation number&quot;, y=&quot;Price&quot;, title = &quot;Figure 1. Accommodation Number and Airbnb Price&quot;) </code></pre>
+<p><img src="/eda_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>Not all variables showed clear relationships with price however. For example, from the plot of the neighborhood, which would illustrate any location effect on price, we cannot see any significant trends through the graph. Overall, we were concerned that using our intuition to choose variables and plotting those individual variables effect would not provide strong evidence for interesting relationships. Thus, for a more precise variable choosing, we were considering testing all variables’ correlation, and selecting the variables which are strongly correlated with price and other variables to prevent the omitted variable bias.</p>
+</div>
+<div id="correlation-testing-and-variable-selection" class="section level1">
+<h1>Correlation Testing and Variable Selection</h1>
+<p>For the correlation testing, we separated all variables into numerical group and categorical group. There are 34 numerical variables and 38 categorical variables.</p>
+<div id="numerical-group" class="section level2">
+<h2>Numerical Group</h2>
+<p>Before beginning the correlation analysis of the numerical variables, we eliminated 4 of the 34 numerical ones that would not be useful for predicting price. Listing ID and Host ID are numeric but random and will not be correlated with price. Latitude and Longitude were also removed since all the listings are in Boston so the range of these values is quite small and not expected to be strongly related to price.</p>
+<p><img src="/eda_files/figure-html/unnamed-chunk-3-1.png" width="672" /><img src="/eda_files/figure-html/unnamed-chunk-3-2.png" width="672" /></p>
+<p>From the correlation plot, we see that many variables are slightly correlated with price. Many variables are also correlated with each other, so we were careful not choose variables that were strongly correlated to each other. We selected four representative variables which are correlated with price: accommodation number, cleaning fee, availability, and number of reviews.</p>
+<p>Below are the scatter plots these four variables against price.
+<img src="/eda_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<div id="accommodation-number-vs.cleaning-fee" class="section level3">
+<h3>Accommodation number vs. Cleaning fee</h3>
+<p>One important note is that the correlation matrix suggests there exists a slight correlation between accommodation number and cleaning fee (0.41). In order to further analyze their linear relationship, we conduct a one-way ANOVA on these two variables.</p>
+<pre><code>##                Df  Sum Sq Mean Sq F value Pr(&gt;F)    
+## accommodates    1 1698822 1698822   724.9 &lt;2e-16 ***
+## Residuals    3581 8392685    2344                   
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>The ANOVA table indicates a strong linear relationship between cleaning fee and accommodation number, giving an extremely small p-value; that is, we could use one variable to represent both of them. Since accommodation number has a larger correlation coefficient to price than cleaning fee, and since cleaning fee does not provide unique information to the model, we will not include it as one of our predictors. Similiary, the scatter plot of those variables further support our decison. Overall, we selected three numerical variables as accommodation number, availability_30, and number of reviews.</p>
+</div>
+</div>
+<div id="categorical-group" class="section level2">
+<h2>Categorical Group</h2>
+<p>For the categorical group, we selected two variables, <code>room_type</code> and <code>cancellation_policy</code>, and plotted them against price to make sure they are highly correlated with the response variable.</p>
+<div id="room-type" class="section level3">
+<h3>Room Type</h3>
+<pre><code>## # A tibble: 2 x 4
+##   room_type       Count  Mean    SD
+##   &lt;chr&gt;           &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 Entire home/apt  2125 224.  121. 
+## 2 Room             1458  95.9  86.5</code></pre>
+<p><img src="/eda_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>As shown in Figure 2, there is a clear difference between the price of the entire room and private room. Their boxplots indicate that their majority data are not overlapping and the median price of entire home/apartment is larger than the private room. Thus, it is possible for us to conclude that room type has an effect on price.</p>
+</div>
+<div id="cancellation-policy" class="section level3">
+<h3>Cancellation Policy</h3>
+<p>We repeat the process for cancellation policy as we have done for room_type.</p>
+<pre><code>## # A tibble: 4 x 4
+##   cancellation_policy Count  Mean    SD
+##   &lt;chr&gt;               &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 flexible              998  146.  135.
+## 2 moderate              919  163.  103.
+## 3 strict               1581  186.  120.
+## 4 super_strict_30        85  324.  163.</code></pre>
+<p><img src="/eda_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>Figure 3 illustrates that there appears to be a trend in price followed by the strictness of the cancellation policy. That is, the price increases as the strictness of policy increases. Even though the summary of cancellation policy shows that there are fewer observations with a super strict policy than the other policies, we still think it has a logical meaning and choose to include it in the price model.</p>
+<p>From this analysis, we have found 3 numerical variables and 2 categorical variables that appear to be related to price: <code>accommodates</code>, <code>availability_30</code>, and <code>number_of_reviews</code>, <code>room_type</code>, <code>cancellation_policy</code>. However, we need model selection techniques such as Multiple regression model, Minimum AIC, and Minimum BIC to confirm these findings and help us find the best model on price predicting.</p>
+</div>
+</div>
+</div>
+
+      </div>
+    </article>
+  </div>
+
+    </main>
+    <footer class="bg-navy bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white no-underline white-70 dn dib-ns pv2 ph3" href="/" >
+    &copy; 2019 great A
+  </a>
+    <div>
+
+
+
+
+
+
+
+
+
+
+</div>
+  </div>
+</footer>
+
+    
+
+  <script src="/dist/js/app.3fc0f988d21662902933.js"></script>
+
+
+
+    
+<script src="/js/math-code.js"></script>
+<script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+  </body>
+</html>

@@ -1,0 +1,27 @@
+---
+title: Idea of load data on lab
+author: great-a-member
+date: '2019-11-11'
+slug: idea-of-load-data-on-lab
+categories: []
+tags: []
+description: ''
+featured_image: ''
+---
+
+
+
+<p>load the data in R:
+We will download the related csv files and load them into our final project directory.
+Look for any unusual values or codings in the data:
+Many variables in the dataset are urls for the listing, pictures, or host. We do not believe this will be useful in our analysis so these were removed. Other variables had some unusual values that we needed to check. For example, there were many formattings and spelling issues in the strings for the variable “city” and “smart_location”. Since we know that all the listings are located in Boston, and since there are many other variables that describe the neighborhood in which it is located, these columns were removed. There were a few listings that recorded the full zipcode, instead of the first five digits, which needed to be standardized by simply subsetting the string. Some numeric variables also had unusual values. The variable “square_feet”, which reports the size of the listing, ranged from 0 to 2400. It will be difficult to differentiate the accurate recordings from the mistakes, so we may need to remove outliers if we want to use this variable in future analysis.<br />
+Initial attempts to clean the data:
+We removed many columns that were repetitive or did not provide any new or additional information. First, we know that all these listings are located in Boston, MA, USA, so we can remove variables for “city”, “state”, and “country”, and other related variables. There were many variables for neighborhood which were repetitive, so only the most informative one was kept. All the listings had the same value for some variables, like “experiences offered”, or were all missing data for variables like “license” and “jusisdiction_names”. Thus these were removed as well.
+Some values were recorded in dollars or percentage and were thus parsed as strings. These had to be converted to a number. Some missing data also had to be replaced with zeros, like for variables “cleaning fee” and “security deposit”.
+Most of our data was clean. The textual data that is available in the dataset is not in a very usable format yet and will require some more tidying before we can analyze the texts.</p>
+<p>Initial EDA:
+“ In this paper we will analyze the Boston airbnb price in 2015. The data in the file “listings.csv”. As an initial check, we are looking for whether neighborhood and room_type are associated with price.”</p>
+<pre class="r"><code>knitr::include_graphics(rep(&#39;/images/pic2.png&#39;, 1))
+knitr::include_graphics(rep(&#39;/images/pic1.png&#39;, 1))</code></pre>
+<p><img src="/images/pic2.png" width="32.8%" /><img src="/images/pic1.png" width="32.8%" /></p>
+<p>“From the first graph, we can see that most listings are for entire homes or private rooms and have prices less than $250. From the second graph, it appears that prices vary slightly across the neighborhoods, though average prices are still less than $250. It also illustrates that different neighborhoods do not have the same number of listings, with residential areas like Jamaica Plain and South End typically having more listings. Small neighborhoods appear to have fewer listings.“</p>

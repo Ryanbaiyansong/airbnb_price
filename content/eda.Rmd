@@ -1,0 +1,127 @@
+---
+date: "2019-10-03T16:56:11-04:00"
+description: ""
+featured_image: ""
+tags: []
+title: Exploratory Data Analysis
+---
+
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+library(tidyverse)
+boston <- read_csv("listings.csv")
+
+# clean data - delete useless columns
+boston <- select(boston, -market, -smart_location, -city, -neighbourhood, -license, -requires_license, -jurisdiction_names, -neighbourhood_group_cleansed, -listing_url, -medium_url, -host_url, -scrape_id, -last_scraped, -experiences_offered, -thumbnail_url, -picture_url, -xl_picture_url, -host_name, -state, -country, -country_code, -host_listings_count, -has_availability)
+
+# clean data - filter useless observations
+boston <- mutate(boston, host_response_rate=parse_number(host_response_rate), host_acceptance_rate=parse_number(host_acceptance_rate), zipcode=substr(zipcode, 1, 5), price=parse_number(price), weekly_price=parse_number(weekly_price),monthly_price=parse_number(monthly_price),security_deposit=parse_number(replace_na(security_deposit, 0)), cleaning_fee=parse_number(replace_na(cleaning_fee, 0)))
+
+# clean data - use ggplot to find the outliers of price,and remove the outliers.
+# ggplot(boston,aes(y=price))+geom_boxplot()
+boston_cl1 <- boston %>%filter(price<1500)
+
+## We forcus on finding the variables influencing the price of Airbnb under 1500 dollars.
+```
+
+# Introduction
+
+In this project we will analyze the Boston Airbnb dataset. We will download the related csv files and load them into our final project directory. The data is in the file “listings.csv”. Given that Boston is a “college city” and its tourism industry thrives on its remarkable historical culture as well, it is a city that attracts many visitors looking for places to stay. We were curious to look into the Airbnb listings that Boston has to offer, especially their prices since Boston has high housing prices in general. While our individual blogs posts contain exploratory data analyses that investigate other relationships in the data set, this page serves to show the analysis that is most pertinent to our main goal of investigating the price of Airbnbs in Boston and finding the most useful covariates for price prediction.
+
+As seen in the summary statistics on the Data Description page, very few Airbnbs have prices higher than $1500. The two observations with prices in the $3000-4000 range are outliers and filtered out.
+
+```{r knitr-logo, out.width='32.8%', fig.show='hold',echo=FALSE}
+knitr::include_graphics(rep('/images/map.png', 1))
+```
+This map illustrates the location of the Airbnb listings. The darker blue indicates that there are more Airbnbs in that region. The red points are the accurate positions of Airbnbs.
+
+# Preliminary Analysis and Problems
+
+Firstly, we selected several variables that are possibly related to price based on our intuition and tested their correlation. These variables included neighborhood, room type, property type, accmmodation number, customer feedback, cleaning fee, and response rate, etc. For each of these variables, we plotted them against price individually with boxplots, expecting to see that all of those variables have clear relationships with price. After the this plotting, we had an initial understanding of each variable, though some results were unexpected.
+
+As shown in Figure 1, by grouping `accommodates` (the number of people the listing can accommodate) from 0 - 16, we see that there is a slight positive relationship between `accommodates` and price. We would expect the price to increase with more people staying in the home. Even though there are some outliers and each `accommodate` group has a different variance, there is still good initial evidence to predict that the accomodation number is associated with airbnb price.
+
+```{r warning=FALSE, message=FALSE}
+boston %>% subset(price <1000) %>%  group_by(accommodates) %>%  mutate(n = n()) %>%  ggplot(aes(group = accommodates, x = accommodates, y = price)) + geom_boxplot(aes(fill = n)) + labs (x="Accommodation number", y="Price", title = "Figure 1. Accommodation Number and Airbnb Price") 
+```
+
+Not all variables showed clear relationships with price however. For example, from the plot of the neighborhood, which would illustrate any location effect on price, we cannot see any significant trends through the graph. Overall, we were concerned that using our intuition to choose variables and plotting those individual variables effect would not provide strong evidence for interesting relationships. Thus, for a more precise variable choosing, we were considering testing all variables’ correlation, and selecting the variables which are strongly correlated with price and other variables to prevent the omitted variable bias.
+
+# Correlation Testing and Variable Selection
+
+For the correlation testing, we separated all variables into numerical group and categorical group. There are 34 numerical variables and 38 categorical variables.
+
+## Numerical Group
+
+Before beginning the correlation analysis of the numerical variables, we eliminated 4 of the 34 numerical ones that would not be useful for predicting price. Listing ID and Host ID are numeric but random and will not be correlated with price. Latitude and Longitude were also removed since all the listings are in Boston so the range of these values is quite small and not expected to be strongly related to price.	
+
+```{r text = "EDA1", warning=FALSE, message=FALSE,echo=FALSE}
+library(xtable)
+library(corrgram)
+# Numeric Variables
+corr_total <- boston_cl1 %>% select_if(is.numeric) %>% select(-id,-host_id,-latitude,-longitude)
+corr_tot <- corrgram(corr_total, order=FALSE, lower.panel=panel.shade,upper.panel=panel.cor)
+
+corr_select <- boston_cl1 %>% select(price,accommodates,cleaning_fee,availability_30,number_of_reviews)
+corr_tot <- corrgram(corr_select, order=FALSE, lower.panel=panel.shade,upper.panel=panel.cor)
+##From the plot, we find that a lot of numeric variables are highly correlated.
+```
+
+From the correlation plot, we see that many variables are slightly correlated with price. Many variables are also correlated with each other, so we were careful not choose variables that were strongly correlated to each other. We selected four representative variables which are correlated with price: accommodation number, cleaning fee, availability, and number of reviews. 
+
+Below are the scatter plots these four variables against price. 
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+corr_select <- boston_cl1 %>% select(accommodates,cleaning_fee,availability_30,number_of_reviews,price)
+par(mfrow=c(2,3))
+plot(corr_select$accommodates, corr_select$price)
+plot(corr_select$cleaning_fee, corr_select$price)
+plot(corr_select$availability_30, corr_select$price)
+plot(corr_select$number_of_reviews, corr_select$price)
+```
+
+### Accommodation number vs. Cleaning fee
+One important note is that the correlation matrix suggests there exists a slight correlation between accommodation number and cleaning fee (0.41). In order to further analyze their linear relationship, we conduct a one-way ANOVA on these two variables.
+
+```{r warning=FALSE, message=FALSE,echo=FALSE}
+ca.aov <- aov(cleaning_fee~accommodates, data = corr_select)
+summary(ca.aov)
+```
+
+The ANOVA table indicates a strong linear relationship between cleaning fee and accommodation number, giving an extremely small p-value; that is, we could use one variable to represent both of them. Since accommodation number has a larger correlation coefficient to price than cleaning fee, and since cleaning fee does not provide unique information to the model, we will not include it as one of our predictors. Similiary, the scatter plot of those variables further support our decison. Overall, we selected three numerical variables as accommodation number, availability_30, and number of reviews.
+
+## Categorical Group
+
+For the categorical group, we selected two variables, `room_type` and `cancellation_policy`, and plotted them against price to make sure they are highly correlated with the response variable. 
+
+### Room Type
+
+```{r warning=FALSE, message=FALSE,echo=FALSE}
+# Categorical Variables
+library("ggpubr")
+library("dplyr")
+
+cat_dt1<-subset(boston_cl1,select=c(price,room_type))
+
+cat_dt1$room_type <-ifelse(cat_dt1$room_type =="Private room","Room",ifelse(cat_dt1$room_type =="Shared room","Room","Entire home/apt"))
+cate_dt1<-group_by(cat_dt1, room_type) %>% summarise(Count = n(), Mean = mean(price, na.rm = TRUE),SD = sd(price, na.rm = TRUE))
+cate_dt1
+ggboxplot(cat_dt1, x = "room_type", y = "price", color = "room_type",
+          ylab = "Price", xlab = "Room Type",main="Figure 2. Boxplot of Price by Room Type")
+```
+
+As shown in Figure 2, there is a clear difference between the price of the entire room and private room. Their boxplots indicate that their majority data are not overlapping and the median price of entire home/apartment is larger than the private room. Thus, it is possible for us to conclude that room type has an effect on price. 
+
+### Cancellation Policy
+
+We repeat the process for cancellation policy as we have done for room_type.
+
+```{r echo=FALSE}
+cat_dt2<-subset(boston_cl1,select=c(price,cancellation_policy))
+cate_dt2<-group_by(cat_dt2, cancellation_policy) %>%summarise(Count = n(), Mean = mean(price, na.rm = TRUE),SD = sd(price, na.rm = TRUE))
+cate_dt2
+ggboxplot(cat_dt2, x = "cancellation_policy", y = "price", color = "cancellation_policy",order = c("flexible","moderate","strict","super_strict_30"),
+          ylab = "Price", xlab = "Cancellation Policy",main="Figure 3. Boxplot of Price by Cancellation Policy")
+```
+
+Figure 3 illustrates that there appears to be a trend in price followed by the strictness of the cancellation policy. That is, the price increases as the strictness of policy increases. Even though the summary of cancellation policy shows that there are fewer observations with a super strict policy than the other policies, we still think it has a logical meaning and choose to include it in the price model.
+
+From this analysis, we have found 3 numerical variables and 2 categorical variables that appear to be related to price: `accommodates`, `availability_30`, and `number_of_reviews`, `room_type`, `cancellation_policy`. However, we need model selection techniques such as Multiple regression model, Minimum AIC, and Minimum BIC to confirm these findings and help us find the best model on price predicting.

@@ -1,0 +1,83 @@
+---
+title: "predict_price"
+author: "Yunhong"
+date: "12/18/2019"
+output: html_document
+---
+
+```{r setup，include=FALSE,echo=FALSE}
+# load packages and data
+library(tidyverse)
+boston <- read_csv("content/listings.csv")
+
+# clean data - delete useless columns
+boston <- select(boston, -market, -smart_location, -city, -neighbourhood, -license, -requires_license, -jurisdiction_names, -neighbourhood_group_cleansed, -listing_url, -medium_url, -host_url, -scrape_id, -last_scraped, -experiences_offered, -thumbnail_url, -picture_url, -xl_picture_url, -host_name, -state, -country, -country_code, -host_listings_count, -has_availability)
+
+# clean data - filter useless observations
+boston <- mutate(boston, host_response_rate=parse_number(host_response_rate), host_acceptance_rate=parse_number(host_acceptance_rate), zipcode=substr(zipcode, 1, 5), price=parse_number(price), weekly_price=parse_number(weekly_price), monthly_price=parse_number(monthly_price), security_deposit=parse_number(replace_na(security_deposit, 0)), cleaning_fee=parse_number(replace_na(cleaning_fee, 0)))
+
+# clean data - use ggplot to find the outliers of price,and remove the outliers.
+ggplot(boston,aes(y=price))+geom_boxplot()
+boston_cl1 <- boston %>%filter(price<1500)
+
+## We forcus on finding the variables influencing the price of Airbnb under 1500 dollars.
+```
+
+```{r datareframing, warning=FALSE, message=FALSE,echo=FALSE}
+# Randomize rows
+boston_cl2 = boston_cl1[sample(nrow(boston_cl1)),]
+# From EDA, some changes in data sets
+boston_cl2$room_type <-ifelse(boston_cl2$room_type =="Private room","Room",ifelse(boston_cl2$room_type =="Shared room","Room","Entire home/apt"))
+boston_cl2$cancellation_policy <-ifelse(boston_cl2$cancellation_policy == "super_strict_30","Super Strict","Not Super Strict")
+# Form Training, Validation and Testing sets
+DataSetTraining = boston_cl2[2:1792,]; 
+DataSetValidation = boston_cl2[1793:3583,];
+
+# Selecting Variables 
+corr_select <- DataSetTraining %>% select(accommodates,availability_30,number_of_reviews,room_type,cancellation_policy, price)
+```
+
+```{r warning=FALSE, message=FALSE,echO=FALSE,echo=FALSE}
+# Use Stepwise Forward AIC method
+null_model_AIC <- lm(price ~ 1 , data = corr_select)
+full_model_AIC <- lm(price ~ . , data = corr_select)
+AIC_model <- step(null_model_AIC, scope = list(lower = null_model_AIC, upper = full_model_AIC), k = 2, direction = "forward")
+AIC_Model <- lm(price ~ accommodates + room_type + cancellation_policy + number_of_reviews + 
+    availability_30,data=boston_cl2)
+summary(AIC_Model)
+
+```
+
+```{r}
+library(tidyverse)
+library(shiny)
+var_choices_room <- c("Entire home/apt", "Room")
+var_choices_policy <-c("Not Super Strict","Super Strict")
+ui <- fluidPage(
+  title="Prediction of Boston Airbnb Price",
+  sliderInput(inputId = "accommodates",label = "Number of accommodations",min=1,max=16,value='8'),
+  sliderInput(inputId = "availability_30",label = "Number of available days",min=0,max=30,value='15'),
+  numericInput(inputId = "number_of_reviews",label = "Number of reviews",min=0,value='20'),
+  selectInput(inputId = "room_type",label = "Room Type",choices = var_choices_room,selected = NULL,width = NULL),
+  selectInput(inputId = "cancellation_policy",label = "Cancellation Policy",choices = var_choices_policy,selected = NULL,width = NULL),
+  verbatimTextOutput("number"))
+server = function(input, output) {
+  data <- reactive ({
+    req(input$room_type)
+    req(input$cancellation_policy)
+    data.frame('accommodates' = input$accommodates,
+               'room_type'=input$room_type,
+               'cancellation_policy'=input$cancellation_policy,
+               'number_of_reivews'=input$number_of_review,
+               'availability_30'=input$availability_30
+               )
+    })
+  pred <- reactive({
+    predict(AIC_Model,data(),se.fit=TRUE)
+  })
+  output$number <- renderText({
+    str_c("The predicted price is ",pred(),".")})}
+shinyApp(ui,server)
+```
+
+

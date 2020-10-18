@@ -1,0 +1,18 @@
+---
+title:  How is accommondate number asssociate with airbnb price in Boston?
+author: Yu Li
+date: '2019-11-14'
+slug: yu-lab-11-17
+categories: []
+tags: []
+description: ''
+featured_image: ''
+---
+
+For the boston airbnb dataset, I'm performing a  relationship between accommodates number and airbnb price. Here are the preliminary analysis of airbnb price:
+
+```{r knitr-logo,out.width='32.8%',fig.show='hold', echo = FALSE}
+knitr::include_graphics(rep('/images/accom.png', 1))
+```
+
+After boxploting all data by grouping accommodates number from 0 - 16, there is an approximately positive relationship between accommodates number and price as the accommodates number increase the price increase too. However, there are two odds data as the accommodates nunmber = 9 or 16, those two data are lower than $250 per day, which usually are the price for 3-5 people. Overall, it is possible to conclude that there is a pattern of price depending on the accommodates number.

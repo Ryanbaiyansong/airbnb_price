@@ -1,0 +1,86 @@
+---
+date: "2019-12-07T14:20:37-05:00"
+description: ""
+featured_image: ""
+tags: []
+title: Big Picture
+---
+
+```{r warning=FALSE, message=FALSE,echo= FALSE}
+library(tidyverse)
+boston <- read_csv("listings.csv")
+
+# clean data - delete useless columns
+boston <- select(boston, -market, -smart_location, -city, -neighbourhood, -license, -requires_license, -jurisdiction_names, -neighbourhood_group_cleansed, -listing_url, -medium_url, -host_url, -scrape_id, -last_scraped, -experiences_offered, -thumbnail_url, -picture_url, -xl_picture_url, -host_name, -state, -country, -country_code, -host_listings_count, -has_availability)
+
+# clean data - filter useless observations
+boston <- mutate(boston, host_response_rate=parse_number(host_response_rate), host_acceptance_rate=parse_number(host_acceptance_rate), zipcode=substr(zipcode, 1, 5), price=parse_number(price), weekly_price=parse_number(weekly_price),monthly_price=parse_number(monthly_price),security_deposit=parse_number(replace_na(security_deposit, 0)), cleaning_fee=parse_number(replace_na(cleaning_fee, 0)))
+
+# clean data - use ggplot to find the outliers of price,and remove the outliers.
+# ggplot(boston,aes(y=price))+geom_boxplot()
+boston_cl1 <- boston %>%filter(price<1500)
+```
+
+## The origin of our data
+In this project we use the dataset from "Boston Airbnb Open Data" which can be found at https://www.kaggle.com/airbnb/boston. Since 2008, guests and hosts have used Airbnb to travel in a more unique, personalized way. As part of Airbnb initiative, this dataset decribes the listing activity of homestays in Boston,MA. To be more specific, for this porject, we tried to explore the data of Boston airbnb price in 2015.
+
+## The main question of our project
+Boston is one of the most historic cities in the United States. Known as the “Cradle of Modern America,” the birthplace of the American Revolution can still be felt at every cobblestone corner. The Freedom Trail is an excellent way to see 16 historical sites placed all across the city. The location of the Boston Tea Party, the USS Constitution, the Old State House, and the Paul Revere House are just some of the places you’ll visit on this two- to three-hour self-guided or guided tour. History isn’t just a footnote; it’s a way of life. So follow the red brick road and take a step back in time. There are so many people attracted by Boston. Airbnbs in Boston are the most undeniable choices for the travels. Thus, we would like to explore what are the contributing variables from our dataset that can affect Boston airbnb price? so we tried to draw out our conclusion based on the evidence that we can find through different plots according to "listing.csv", which includes full descriptions and average review score for Airbnb in Boston.
+
+## Process of solving our main question
+
+
+```{r text = "EDA1", warning=FALSE, message=FALSE, echo=FALSE}
+library(xtable)
+library(corrgram)
+corr_select <- boston_cl1 %>% select(accommodates,cleaning_fee,availability_30,number_of_reviews,price)
+corr_tot <- corrgram(corr_select, order=TRUE, lower.panel=panel.shade,upper.panel=panel.cor)
+```
+
+By using one-way ANOVA on `accommodates` and cleaning_fee, we delete the cleaning_fee and selected the most useful three numerical variables to be`accommodates`, availability_30, and the number of reviews that can affect the price of Airbnb in Boston based on the pictures below.
+
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+corr_select <- boston_cl1 %>% select(accommodates,cleaning_fee,availability_30,number_of_reviews,price)
+par(mfrow=c(2,3))
+plot(corr_select$accommodates, corr_select$price)
+plot(corr_select$availability_30, corr_select$price)
+plot(corr_select$number_of_reviews, corr_select$price)
+```
+
+What's more, “room_type” and “cancellation_policy” also have crucial effect on price based on the following plots. Through these boxplots, we note that the price will increase as the strictness of policy increases. This trend is very interesting and eye-catching. It is the most unexpected we found during our process of data exploration. The room type appeared to also have effect on the housing price.
+
+```{r text = "EDA2",  warning=FALSE, message=FALSE}
+# Categorical Variables
+library("ggpubr")
+library("dplyr")
+
+cat_dt1<-subset(boston_cl1,select=c(price,room_type))
+cate_dt1<-group_by(cat_dt1, room_type) %>%summarise(Count = n(), Mean = mean(price, na.rm = TRUE),SD = sd(price, na.rm = TRUE))
+cate_dt1
+ggboxplot(cat_dt1, x = "room_type", y = "price", color = "room_type",
+          ylab = "price", xlab = "room_type",main="Figure 2. Boxplot of price by room_type")
+## Since the shared room's count is very small part of the whole data and their means are pretty closed, I combine private room and shared room together as a new type "room".
+
+cat_dt1$room_type <-ifelse(cat_dt1$room_type =="Private room","Room",ifelse(cat_dt1$room_type =="Shared room","Room","Entire home/apt"))
+cate_dt1<-group_by(cat_dt1, room_type) %>% summarise(Count = n(), Mean = mean(price, na.rm = TRUE),SD = sd(price, na.rm = TRUE))
+cate_dt1
+ggboxplot(cat_dt1, x = "room_type", y = "price", color = "room_type",
+          ylab = "price", xlab = "room_type",main="Figure 2. Boxplot of price by room_type")
+
+cat_dt2<-subset(boston_cl1,select=c(price,cancellation_policy))
+cate_dt2<-group_by(cat_dt2, cancellation_policy) %>%summarise(Count = n(), Mean = mean(price, na.rm = TRUE),SD = sd(price, na.rm = TRUE))
+cate_dt2
+ggboxplot(cat_dt2, x = "cancellation_policy", y = "price", color = "cancellation_policy",order = c("flexible","moderate","strict","super_strict_30"),
+          ylab = "price", xlab = "cancellation_policy",main="Figure 3. Boxplot of price by cancellation_policy")
+```
+
+```{r knitr-logo, out.width='32.8%', fig.show='hold',echo=FALSE}
+knitr::include_graphics(rep('/images/s.png', 1))
+```
+
+After we analyzed these  3 numerical variables and 2 categorical variables, we tried to build a model for Boston Airbnb prices in order to supply more concrete evidence to support our conclusion We used forward selection based on AIC as a method of variable selection. This resulted in a model with all five predictors we had chosen. However, since not all levels for cancellation policy were significant, we removed it from our model. Thus our final model is 
+
+`Price = (Beta1)Accommondates + (Beta2)room type +(Beta3)availabilityy30 + (Beta4)number of reviews`
+
+The adjusted R2is 0.3782, that is, there are 37.8% of the variance in price of Airbnbs in Boston would be explained by our model. There must be other variables that are model is missing. We had wanted to include size in our model and our data set does include the variable `square_feet`. However, for most observations, this information was missing; only 1.5% of the observations had this size data. Additionally, since this data is only for 2015, we may be missing it may be missing larger trends that relate to prices. Combining this data with data from other years may reveal more interesting relationships with price. 
+

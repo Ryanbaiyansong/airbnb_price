@@ -1,0 +1,159 @@
+---
+date: "2019-12-06T09:23:49-05:00"
+description: ""
+featured_image: ""
+tags: []
+title: Modeling and Inference
+---
+As explained on  the EDA page, after the plotting of several variables, we chose five statistically significant covariates as the final ones for further analysis. Our main goal was to determine which covariates affect the price of Airbnbs in Boston and to build a regression model. In this page, we will use Minimum AIC as our model selection method. We expect to figure out the best model based on those five covariates: `accommodate`, `availability_30`, and `number of reviews`, `room_type`, `cancellation_policy`. Additionally, we will use model validation to further support our fitted regression model.
+
+```{r warning=FALSE, message=FALSE,echo=FALSE}
+library(tidyverse)
+boston <- read_csv("listings.csv")
+
+# clean data - delete useless columns
+boston <- select(boston, -market, -smart_location, -city, -neighbourhood, -license, -requires_license, -jurisdiction_names, -neighbourhood_group_cleansed, -listing_url, -medium_url, -host_url, -scrape_id, -last_scraped, -experiences_offered, -thumbnail_url, -picture_url, -xl_picture_url, -host_name, -state, -country, -country_code, -host_listings_count, -has_availability)
+
+# clean data - filter useless observations
+boston <- mutate(boston, host_response_rate=parse_number(host_response_rate), host_acceptance_rate=parse_number(host_acceptance_rate), zipcode=substr(zipcode, 1, 5), price=parse_number(price), weekly_price=parse_number(weekly_price),monthly_price=parse_number(monthly_price),security_deposit=parse_number(replace_na(security_deposit, 0)), cleaning_fee=parse_number(replace_na(cleaning_fee, 0)))
+
+# clean data - use ggplot to find the outliers of price,and remove the outliers.
+# ggplot(boston,aes(y=price))+geom_boxplot()
+boston_cl1 <- boston %>%filter(price<1500)
+
+## We forcus on finding the variables influencing the price of Airbnb under 1500 dollars.
+```
+
+# Data Reframing
+
+In order to make to make the model selection and validation process more precise, we randomized all data first. Then we seperated the new dataset into two equal sets: a training group and a validation group. By the way, we randomly dropped one observation since our total obeservations is a odd number and we need to make two equal groups. Since we randomly dropped one observation, the numbers in comment are all approximately numbers. After categorizing the randomized dataset into two groups, we create a new data set called “Corr_select” which stores the five selected covariates. 
+
+```{r warning=FALSE, message=FALSE}
+# Randomize rows
+boston_cl2 = boston_cl1[sample(nrow(boston_cl1)),]
+# From EDA, some changes in data sets
+boston_cl2$room_type <-ifelse(boston_cl2$room_type =="Private room","Room",ifelse(boston_cl2$room_type =="Shared room","Room","Entire home/apt"))
+# Form Training, Validation and Testing sets
+DataSetTraining = boston_cl2[2:1792,]; 
+DataSetValidation = boston_cl2[1793:3583,];
+
+# Selecting Variables 
+corr_select <- DataSetTraining %>% select(accommodates,availability_30,number_of_reviews,room_type,cancellation_policy, price)
+```
+# Model Selection
+
+## Stepwise Forward AIC model
+
+For our model, we decided to use stepwise AIC model selection to help us to select the most significant variables. The stepwise AIC model is building a regression model from a set of candidate predictor variables by entering predictors based on AIC, in a stepwise manner until there are no informative variables left to enter. We expect the final model to include all the candidate predictor variables. The stepwise AIC forward model tells R to start with the null model and search through models lying in the range between the null and full model using the forward selection algorithm.
+
+### Steps of AIC model
+```{r warning=FALSE, message=FALSE}
+# Use Stepwise Forward AIC method
+null_model_AIC <- lm(price ~ 1 , data = corr_select)
+full_model_AIC <- lm(price ~ . , data = corr_select)
+AIC_model <- step(null_model_AIC, scope = list(lower = null_model_AIC, upper = full_model_AIC), k = 2, direction = "forward")
+```
+
+As shown in the first table, the stepwise process of variable selection step by step. The minimum AIC model would include all five covariates we had selected since it has the minimum AIC number. 
+
+### Summary of AIC model
+
+```{r warning=FALSE, message=FALSE}
+summary(AIC_model)
+AIC_model$anova
+```
+
+However, as we see through the summary of the AIC model, cancellation policy levels moderate and strict are not statistically significant at 10% level. Cancellation policy is categorical data and eliminating these two options makes no sense. Thus, we will regroup the cancellation_policy variable in our last model. Since only super_strict_30 is statistically significant, we the other three responses in one group. Now, the two categories for cancellation_policy are Super Strict and Not Super Strict.
+
+```{r warning=FALSE, message=FALSE}
+# regroup the cancellation policy to two groups,super strict or not
+corr_select$cancellation_policy <-ifelse(corr_select$cancellation_policy == "super_strict_30","Super Strict","Not Super Strict")
+null_model_AIC <- lm(price ~ 1 , data = corr_select)
+full_model_AIC <- lm(price ~ . , data = corr_select)
+AIC_model <- step(null_model_AIC, scope = list(lower = null_model_AIC, upper = full_model_AIC), k = 2, direction = "forward")
+summary(AIC_model)
+AIC_model$anova
+```
+
+The new model shows that the cancellation policy now is more significant than the previous model. Thus, we conclude this new model as our final model.
+
+The adjusted R^2 of our final model is approximately 0.351; that is, 35.1% of the variance in price of Airbnbs in Boston is explained by our model. Even though 35.1% is a not very high percentage, we think this model still has some special meaning for further analysis. In our analysis, we chose 5 variables to make the regression of price for about 4000 observations; we need more variables to get the more precise regression model. But at least for now, four of those five variables are statistically significant covariates we needed, and the final regression model we would use to test the validation is:
+
+'Price = 26.697Accommondates -70.037room_type +107.697cancellation_policy+ 0.937availabilityy30 -0.240number of reviews'
+
+# Diagnostic Analysis
+
+Since the linear model is complete, we have a formula that we can use to predict price. However, we have to ensure that it is statistically significant and that the model is a good model for such prediction.
+
+## Test of Normality for Standardized Residuals
+
+Here, we visualized the standard residuals vs. the fitted value to check whether the model satisfies the statistical assumptions.
+
+### vs price
+```{r warning=FALSE, message=FALSE}
+# vs price
+boston.stdres = rstandard(AIC_model)
+plot(corr_select$price,boston.stdres,xlab="Price",ylab="Standardized Residuals",col="blue")
+abline(0, 0)
+abline(h=2,lty=2)
+abline(h=-2,lty=2)
+```
+### vs Fitted
+```{r warning=FALSE, message=FALSE}
+plot(fitted(AIC_model),boston.stdres,xlab="Fitted Value",ylab="Standardized Residuals",col="blue")
+abline(0, 0)
+abline(h=2,lty=2)
+abline(h=-2,lty=2)
+```
+The scatter plots shows the standard residuals have a non-constant variance, which violates our statistical assumptions. Most of the points are scattered around zero, but small part of points have a big standardized residuals.
+
+## Test of Normality for Standarized Residuals
+
+### qqplots 
+```{r warning=FALSE, message=FALSE}
+qqnorm(boston.stdres, ylab="Standardized Residuals", xlab="Normal Scores",col="blue") 
+qqline(boston.stdres)
+```
+### histogram
+```{r warning=FALSE, message=FALSE}
+hist(boston.stdres,100)
+```
+The qq plot shows that most of the data points are in the line, yet it has a heavy tail. The histograms of residuals looks fine and shows that that the bars are centered and symmetric around the mean, except a few bars in the right side are away from mean. In the future, we may try to use some method, like using weighted least squars or using transformation to fix this problem.
+
+# Validation
+Our model was used to predict for the validation set. 
+
+## Plot residuals
+
+A residual plot has been visualized of validation data fitting and training data fitting.
+
+```{r warning=FALSE, message=FALSE}
+# Residuals for training data
+ResMLS <- resid(AIC_model)
+
+# Residuals for validation data
+DataSetValidation$cancellation_policy <-ifelse(corr_select$cancellation_policy == "super_strict_30","Super Strict","Not Super Strict")
+output<-predict(AIC_model, se.fit = TRUE, newdata=data.frame(price=DataSetValidation$price, room_type=DataSetValidation$room_type, accommodates=DataSetValidation$accommodates, cancellation_policy=DataSetValidation$cancellation_policy,availability_30=DataSetValidation$availability_30,number_of_reviews=DataSetValidation$number_of_reviews))
+ResMLSValidation <- DataSetValidation$price - output$fit
+
+# Plot residuals
+plot(DataSetTraining$price,ResMLS,xlab="price", ylab="Residuals", ylim=c(min(ResMLS,ResMLSValidation),max(ResMLS,ResMLSValidation)), col=c("blue"), lty=0, cex=1, pch=19)
+points(DataSetValidation$price,ResMLSValidation,xlab="price", ylab="Residuals",xlim=c(0,7),col="red", lty=0, cex=1, pch=19)
+legend(800, 0, legend=c("Training","Validation"), col=c("blue","red"), lty=0, cex=1, pch=19)
+```
+The residual plot of model applied on validation data doesn’t look very promising, as there is a clear increasing pattern. We suspect there is a non-linear association between the response variable and some predictors so some variance in response would not be captured by our linear model.
+
+## Relative Mean Square Error for validation data
+```{r warning=FALSE, message=FALSE}
+# Relative Mean Square Error for validation data
+mean((ResMLSValidation)^2) / mean((DataSetValidation$price)^2)
+```
+## Correlation Accuracy Table
+```{r warning=FALSE,fig.align='center',out.width = '60%'}
+#correlation_accuracy
+actual_preds<-data.frame(cbind(actuals=DataSetValidation$price,predicteds=output$fit))
+correlation_accuracy<-cor(actual_preds)
+correlation_accuracy
+```
+
+A simple correlation between the actual and the predicted values can be used as a form of accuracy measure. A higher correlation accuracy implies that the actuals and predicted values have similar directional movement. In our case, the correlation of accuracy is approxiamtely 60%, indicating that, just over half of the time, the predicted values and actual values moved in a similar direction.

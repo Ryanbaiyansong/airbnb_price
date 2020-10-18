@@ -1,0 +1,75 @@
+---
+date: "2019-10-03T16:56:11-04:00"
+description: ""
+featured_image: ""
+tags: []
+title: Exploratory Data Analysis
+---
+
+
+
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>In this project we will analyze the Boston Airbnb dataset. We will download the related csv files and load them into our final project directory. The data is in the file “listings.csv”. Given that Boston is a “college city” and its tourism industry thrives on its remarkable historical culture as well, it is a city that attracts many visitors looking for places to stay. We were curious to look into the Airbnb listings that Boston has to offer, especially their prices since Boston has high housing prices in general. While our individual blogs posts contain exploratory data analyses that investigate other relationships in the data set, this page serves to show the analysis that is most pertinent to our main goal of investigating the price of Airbnbs in Boston and finding the most useful covariates for price prediction.</p>
+<p>As seen in the summary statistics on the Data Description page, very few Airbnbs have prices higher than $1500. The two observations with prices in the $3000-4000 range are outliers and filtered out.</p>
+<p><img src="/images/map.png" width="32.8%" />
+This map illustrates the location of the Airbnb listings. The darker blue indicates that there are more Airbnbs in that region. The red points are the accurate positions of Airbnbs.</p>
+</div>
+<div id="preliminary-analysis-and-problems" class="section level1">
+<h1>Preliminary Analysis and Problems</h1>
+<p>Firstly, we selected several variables that are possibly related to price based on our intuition and tested their correlation. These variables included neighborhood, room type, property type, accmmodation number, customer feedback, cleaning fee, and response rate, etc. For each of these variables, we plotted them against price individually with boxplots, expecting to see that all of those variables have clear relationships with price. After the this plotting, we had an initial understanding of each variable, though some results were unexpected.</p>
+<p>As shown in Figure 1, by grouping <code>accommodates</code> (the number of people the listing can accommodate) from 0 - 16, we see that there is a slight positive relationship between <code>accommodates</code> and price. We would expect the price to increase with more people staying in the home. Even though there are some outliers and each <code>accommodate</code> group has a different variance, there is still good initial evidence to predict that the accomodation number is associated with airbnb price.</p>
+<pre class="r"><code>boston %&gt;% subset(price &lt;1000) %&gt;%  group_by(accommodates) %&gt;%  mutate(n = n()) %&gt;%  ggplot(aes(group = accommodates, x = accommodates, y = price)) + geom_boxplot(aes(fill = n)) + labs (x=&quot;Accommodation number&quot;, y=&quot;Price&quot;, title = &quot;Figure 1. Accommodation Number and Airbnb Price&quot;) </code></pre>
+<p><img src="/eda_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>Not all variables showed clear relationships with price however. For example, from the plot of the neighborhood, which would illustrate any location effect on price, we cannot see any significant trends through the graph. Overall, we were concerned that using our intuition to choose variables and plotting those individual variables effect would not provide strong evidence for interesting relationships. Thus, for a more precise variable choosing, we were considering testing all variables’ correlation, and selecting the variables which are strongly correlated with price and other variables to prevent the omitted variable bias.</p>
+</div>
+<div id="correlation-testing-and-variable-selection" class="section level1">
+<h1>Correlation Testing and Variable Selection</h1>
+<p>For the correlation testing, we separated all variables into numerical group and categorical group. There are 34 numerical variables and 38 categorical variables.</p>
+<div id="numerical-group" class="section level2">
+<h2>Numerical Group</h2>
+<p>Before beginning the correlation analysis of the numerical variables, we eliminated 4 of the 34 numerical ones that would not be useful for predicting price. Listing ID and Host ID are numeric but random and will not be correlated with price. Latitude and Longitude were also removed since all the listings are in Boston so the range of these values is quite small and not expected to be strongly related to price.</p>
+<p><img src="/eda_files/figure-html/unnamed-chunk-3-1.png" width="672" /><img src="/eda_files/figure-html/unnamed-chunk-3-2.png" width="672" /></p>
+<p>From the correlation plot, we see that many variables are slightly correlated with price. Many variables are also correlated with each other, so we were careful not choose variables that were strongly correlated to each other. We selected four representative variables which are correlated with price: accommodation number, cleaning fee, availability, and number of reviews.</p>
+<p>Below are the scatter plots these four variables against price.
+<img src="/eda_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<div id="accommodation-number-vs.cleaning-fee" class="section level3">
+<h3>Accommodation number vs. Cleaning fee</h3>
+<p>One important note is that the correlation matrix suggests there exists a slight correlation between accommodation number and cleaning fee (0.41). In order to further analyze their linear relationship, we conduct a one-way ANOVA on these two variables.</p>
+<pre><code>##                Df  Sum Sq Mean Sq F value Pr(&gt;F)    
+## accommodates    1 1698822 1698822   724.9 &lt;2e-16 ***
+## Residuals    3581 8392685    2344                   
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>The ANOVA table indicates a strong linear relationship between cleaning fee and accommodation number, giving an extremely small p-value; that is, we could use one variable to represent both of them. Since accommodation number has a larger correlation coefficient to price than cleaning fee, and since cleaning fee does not provide unique information to the model, we will not include it as one of our predictors. Similiary, the scatter plot of those variables further support our decison. Overall, we selected three numerical variables as accommodation number, availability_30, and number of reviews.</p>
+</div>
+</div>
+<div id="categorical-group" class="section level2">
+<h2>Categorical Group</h2>
+<p>For the categorical group, we selected two variables, <code>room_type</code> and <code>cancellation_policy</code>, and plotted them against price to make sure they are highly correlated with the response variable.</p>
+<div id="room-type" class="section level3">
+<h3>Room Type</h3>
+<pre><code>## # A tibble: 2 x 4
+##   room_type       Count  Mean    SD
+##   &lt;chr&gt;           &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 Entire home/apt  2125 224.  121. 
+## 2 Room             1458  95.9  86.5</code></pre>
+<p><img src="/eda_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>As shown in Figure 2, there is a clear difference between the price of the entire room and private room. Their boxplots indicate that their majority data are not overlapping and the median price of entire home/apartment is larger than the private room. Thus, it is possible for us to conclude that room type has an effect on price.</p>
+</div>
+<div id="cancellation-policy" class="section level3">
+<h3>Cancellation Policy</h3>
+<p>We repeat the process for cancellation policy as we have done for room_type.</p>
+<pre><code>## # A tibble: 4 x 4
+##   cancellation_policy Count  Mean    SD
+##   &lt;chr&gt;               &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 flexible              998  146.  135.
+## 2 moderate              919  163.  103.
+## 3 strict               1581  186.  120.
+## 4 super_strict_30        85  324.  163.</code></pre>
+<p><img src="/eda_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>Figure 3 illustrates that there appears to be a trend in price followed by the strictness of the cancellation policy. That is, the price increases as the strictness of policy increases. Even though the summary of cancellation policy shows that there are fewer observations with a super strict policy than the other policies, we still think it has a logical meaning and choose to include it in the price model.</p>
+<p>From this analysis, we have found 3 numerical variables and 2 categorical variables that appear to be related to price: <code>accommodates</code>, <code>availability_30</code>, and <code>number_of_reviews</code>, <code>room_type</code>, <code>cancellation_policy</code>. However, we need model selection techniques such as Multiple regression model, Minimum AIC, and Minimum BIC to confirm these findings and help us find the best model on price predicting.</p>
+</div>
+</div>
+</div>

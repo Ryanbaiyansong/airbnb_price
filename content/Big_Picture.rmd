@@ -1,0 +1,103 @@
+---
+date: "2019-12-07T14:20:37-05:00"
+description: ""
+featured_image: ""
+tags: []
+title: Big Picture
+---
+
+```{r warning=FALSE, message=FALSE,echo= FALSE}
+library(tidyverse)
+boston <- read_csv("listings.csv")
+
+# clean data - delete useless columns
+boston <- select(boston, -market, -smart_location, -city, -neighbourhood, -license, -requires_license, -jurisdiction_names, -neighbourhood_group_cleansed, -listing_url, -medium_url, -host_url, -scrape_id, -last_scraped, -experiences_offered, -thumbnail_url, -picture_url, -xl_picture_url, -host_name, -state, -country, -country_code, -host_listings_count, -has_availability)
+
+# clean data - filter useless observations
+boston <- mutate(boston, host_response_rate=parse_number(host_response_rate), host_acceptance_rate=parse_number(host_acceptance_rate), zipcode=substr(zipcode, 1, 5), price=parse_number(price), weekly_price=parse_number(weekly_price),monthly_price=parse_number(monthly_price),security_deposit=parse_number(replace_na(security_deposit, 0)), cleaning_fee=parse_number(replace_na(cleaning_fee, 0)))
+
+# clean data - use ggplot to find the outliers of price,and remove the outliers.
+# ggplot(boston,aes(y=price))+geom_boxplot()
+boston_cl1 <- boston %>%filter(price<1500)
+```
+Every year, hundreds of thousands of people come to Boston and its surrounding areas. Drawn by its historic charm, its mix of diverse cultures, and its top-tier universities, tourists are always travelling to Bay State capital. While Boston’s many new shiny hotels offer a lavish stay, many people turn to other places of residences for their vacations. Since 2008, guests have been able to use Airbnb to travel in a unique, personalized way, staying in the homes and rooms of locals. As students in Boston, we must deal with high housing prices in Boston and were curious to examine the prices of Airbnbs in the city, should we want to come back to visit or if we have friends and family in town. We wanted to determine which kind of factors have an effect on the price of Airbnbs in Boston. 
+
+# The Data
+In order to explore our question, we used the dataset from "Boston Airbnb Open Data" which can be found at https://www.kaggle.com/airbnb/boston. This dataset is originally from Inside Airbnb, which collected all the public information on the Airbnb site. Three data sources are available, but two only contain a small amount of data and do not contain sufficient information to answer our question. Thus we only used use "listing.csv", which includes full descriptions, property information, host profiles, and review scores for each Airbnb home in Boston. This dataset was used to answer our main question: which factors contribute to the price of Airbnbs in Boston?
+
+The dataset is fairly clean and can easily be imported using the read_csv() function in R. But this large dataset also includes many variables that are not useful for our analysis. Cleaning the data mostly involves removing unnecessary or repetitive variables, like urls and the multiple location columns. Only a few unusual or inconsistent values had to be fixed first. Additionally, there were so few observations for shared rooms compared to entire homes/apartments, so these observations were combined with the private rooms, into a category called Rooms. The dataset also contains raw textual data which needs a bit of cleaning before any analysis. 
+
+# Exploratory Data Analysis
+
+In order to find the useful covariates that contribute to the price of Airbnbs in Boston, we used a correlation test to find the variables that are have a strong relationship with it. We separated all variables into a numerical group and a categorical group. 
+
+## Numerical Group
+Out of the numerical variables, we found four that seem to have an effect on price, which are the number of reviews, the cleaning fee, the number of people it can accommodate, and the number of available days. 
+
+The plots below illustrate the correlation between our selected explanatory variables and price. 
+
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+corr_select <- boston_cl1 %>% select(accommodates,cleaning_fee,availability_30,number_of_reviews,price)
+par(mfrow=c(2,3))
+plot(corr_select$accommodates, corr_select$price)
+plot(corr_select$cleaning_fee, corr_select$price)
+plot(corr_select$availability_30, corr_select$price)
+plot(corr_select$number_of_reviews, corr_select$price)
+```
+
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+library(xtable)
+library(corrgram)
+# Numeric Variables
+corr_select <- boston_cl1 %>% select(price,accommodates,cleaning_fee,availability_30,number_of_reviews)
+corr_tot <- corrgram(corr_select, order=FALSE, lower.panel=panel.shade,upper.panel=panel.cor)
+```
+
+## Categorical  Group
+
+From the categorical variables, we selected the `cancellation_policy` and `room_type`. 
+For the cancellation policy, we notice that there is a trend followed by the strictness of cancellation policy: the price will increase as the strictness of policy increases. The boxplot below illustrates the relationship between cancellation policy and price and leads us to conclude that it will be a good choice for a covariate in our model. 
+
+```{r warning=FALSE, message=FALSE,echo=FALSE}
+# Categorical Variables
+library("ggpubr")
+library("dplyr")
+cat_dt2<-subset(boston_cl1,select=c(price,cancellation_policy))
+cate_dt2<-group_by(cat_dt2, cancellation_policy) %>%summarise(Count = n(), Mean = mean(price, na.rm = TRUE),SD = sd(price, na.rm = TRUE))
+cate_dt2
+ggboxplot(cat_dt2, x = "cancellation_policy", y = "price", color = "cancellation_policy",
+          ylab = "price", xlab = "cancellation_policy",main=" Boxplot of price by cancellation_policy")
+```
+
+For the room type, we also use a boxplot, seen below, and we saw that there is a sufficient difference between the price of the entire house/apartment and a single room since their boxplots indicate that their majority data are not overlapping and the median price of entire room is larger than the private room.
+
+```{r warning=FALSE, message=FALSE,echo=FALSE}
+# Categorical Variables
+library("ggpubr")
+library("dplyr")
+cat_dt1<-subset(boston_cl1,select=c(price,room_type))
+cate_dt1<-group_by(cat_dt1, room_type) %>%summarise(Count = n(), Mean = mean(price, na.rm = TRUE),SD = sd(price, na.rm = TRUE))
+cate_dt1
+ggboxplot(cat_dt1, x = "room_type", y = "price", color = "room_type",
+          ylab = "price", xlab = "room_type",main="Boxplot of price by room_type")
+```
+
+# Modeling
+
+Having selected our five covariates, we build a regression model using minimum AIC as our model selection method to confirm our findings and help us find the best model for price predicting.  We also use model validation to further support our fitted regression model.
+
+In our model, we decided to use stepwise AIC model selection to help us to select the most significant variables. The stepwise AIC model is building a regression model from a set of candidate predictor variables by entering predictors based on AIC, in a stepwise manner until there are no informative variables left. We expect the final model to include all the candidate predictor variables. Using forward stepwise AIC selection led to a model with all five of our predictors. However, in testing the significance of the coefficients, we found that two levels in cancellation policy were not significant at the 0.1 level. Thus, we regroup the cancellation_policy variable to make it more significant in our final model.
+
+Thus, the final regression model we would use to test the validation is: 
+'Price = 26.697Accommondates -70.037room_type +107.697cancellation_policy+ 0.937availabilityy30 -0.240number of reviews'
+
+```{r knitr-logo, out.width='32.8%', fig.show='hold',echo=FALSE}
+knitr::include_graphics(rep('/images/s.png', 1))
+```
+
+This model was used to predict for our validation set and the residuals for both sets are plotted above. The residual plot of model applied on validation data doesn’t look very promising, as there is a clear increasing pattern. We suspected a non-linear association between response and some predictors and that some variance in response would not be captured. We believe that using a method like weighted least squares instead, or applying a transformation to our data may help.
+
+The adjusted R^2 of our final model is 0.351, which means that 35.1% of the variance in price of Airbnbs in Boston would be explained by our model. Since there is much of the price that we are not capturing, it leads us to believe that there must be other variables missing in our model. We had wanted to include size in our model and our dataset does include the variable `square_feet`. However, for most observations, this information was missing; only 1.5% of the observations had this size data. Additionally, since this data is only for 2015, we may be missing it may be missing larger trends that relate to prices. Combining this data with data from other years may reveal more interesting relationships with price. 
+
+# Conclusion
+Our goal was to determine which factors in a Boston Airbnb explain its price and build a model to predict the price. While not a perfect model, we selected four variables that are related price: accomodation number, availability, room type, and cleaning fee. Using the model for prediction, its predicted values had a 60% correlation with the actual values, indicating that just over half the time, the predicted values and the actual values move in the same direction. For just four variables, this isn’t too bad.

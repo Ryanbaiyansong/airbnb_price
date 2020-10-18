@@ -1,0 +1,300 @@
+---
+date: "2019-12-06T09:23:49-05:00"
+description: ""
+featured_image: ""
+tags: []
+title: Modeling and Inference
+---
+
+
+
+<p>As explained on the EDA page, after the plotting of several variables, we chose five statistically significant covariates as the final ones for further analysis. Our main goal was to determine which covariates affect the price of Airbnbs in Boston and to build a regression model. In this page, we will use Minimum AIC as our model selection method. We expect to figure out the best model based on those five covariates: <code>accommodate</code>, <code>availability_30</code>, and <code>number of reviews</code>, <code>room_type</code>, <code>cancellation_policy</code>. Additionally, we will use model validation to further support our fitted regression model.</p>
+<div id="data-reframing" class="section level1">
+<h1>Data Reframing</h1>
+<p>In order to make to make the model selection and validation process more precise, we randomized all data first. Then we seperated the new dataset into two equal sets: a training group and a validation group. By the way, we randomly dropped one observation since our total obeservations is a odd number and we need to make two equal groups. Since we randomly dropped one observation, the numbers in comment are all approximately numbers. After categorizing the randomized dataset into two groups, we create a new data set called “Corr_select” which stores the five selected covariates.</p>
+<pre class="r"><code># Randomize rows
+boston_cl2 = boston_cl1[sample(nrow(boston_cl1)),]
+# From EDA, some changes in data sets
+boston_cl2$room_type &lt;-ifelse(boston_cl2$room_type ==&quot;Private room&quot;,&quot;Room&quot;,ifelse(boston_cl2$room_type ==&quot;Shared room&quot;,&quot;Room&quot;,&quot;Entire home/apt&quot;))
+# Form Training, Validation and Testing sets
+DataSetTraining = boston_cl2[2:1792,]; 
+DataSetValidation = boston_cl2[1793:3583,];
+
+# Selecting Variables 
+corr_select &lt;- DataSetTraining %&gt;% select(accommodates,availability_30,number_of_reviews,room_type,cancellation_policy, price)</code></pre>
+</div>
+<div id="model-selection" class="section level1">
+<h1>Model Selection</h1>
+<div id="stepwise-forward-aic-model" class="section level2">
+<h2>Stepwise Forward AIC model</h2>
+<p>For our model, we decided to use stepwise AIC model selection to help us to select the most significant variables. The stepwise AIC model is building a regression model from a set of candidate predictor variables by entering predictors based on AIC, in a stepwise manner until there are no informative variables left to enter. We expect the final model to include all the candidate predictor variables. The stepwise AIC forward model tells R to start with the null model and search through models lying in the range between the null and full model using the forward selection algorithm.</p>
+<div id="steps-of-aic-model" class="section level3">
+<h3>Steps of AIC model</h3>
+<pre class="r"><code># Use Stepwise Forward AIC method
+null_model_AIC &lt;- lm(price ~ 1 , data = corr_select)
+full_model_AIC &lt;- lm(price ~ . , data = corr_select)
+AIC_model &lt;- step(null_model_AIC, scope = list(lower = null_model_AIC, upper = full_model_AIC), k = 2, direction = &quot;forward&quot;)</code></pre>
+<pre><code>## Start:  AIC=17530.42
+## price ~ 1
+## 
+##                       Df Sum of Sq      RSS   AIC
+## + accommodates         1   7849464 24030106 17026
+## + room_type            1   6940252 24939318 17093
+## + cancellation_policy  3   1459367 30420203 17452
+## + availability_30      1    961562 30918008 17478
+## + number_of_reviews    1    413836 31465734 17509
+## &lt;none&gt;                             31879570 17530
+## 
+## Step:  AIC=17026.18
+## price ~ accommodates
+## 
+##                       Df Sum of Sq      RSS   AIC
+## + room_type            1   1698064 22332042 16897
+## + cancellation_policy  3    927037 23103069 16962
+## + availability_30      1    357421 23672685 17001
+## + number_of_reviews    1    347367 23682739 17002
+## &lt;none&gt;                             24030106 17026
+## 
+## Step:  AIC=16896.93
+## price ~ accommodates + room_type
+## 
+##                       Df Sum of Sq      RSS   AIC
+## + cancellation_policy  3    610700 21721342 16853
+## + availability_30      1    361718 21970323 16870
+## + number_of_reviews    1    253989 22078053 16878
+## &lt;none&gt;                             22332042 16897
+## 
+## Step:  AIC=16853.27
+## price ~ accommodates + room_type + cancellation_policy
+## 
+##                     Df Sum of Sq      RSS   AIC
+## + availability_30    1    213096 21508246 16838
+## + number_of_reviews  1    206284 21515058 16838
+## &lt;none&gt;                           21721342 16853
+## 
+## Step:  AIC=16837.61
+## price ~ accommodates + room_type + cancellation_policy + availability_30
+## 
+##                     Df Sum of Sq      RSS   AIC
+## + number_of_reviews  1    170780 21337466 16825
+## &lt;none&gt;                           21508246 16838
+## 
+## Step:  AIC=16825.33
+## price ~ accommodates + room_type + cancellation_policy + availability_30 + 
+##     number_of_reviews</code></pre>
+<p>As shown in the first table, the stepwise process of variable selection step by step. The minimum AIC model would include all five covariates we had selected since it has the minimum AIC number.</p>
+</div>
+<div id="summary-of-aic-model" class="section level3">
+<h3>Summary of AIC model</h3>
+<pre class="r"><code>summary(AIC_model)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = price ~ accommodates + room_type + cancellation_policy + 
+##     availability_30 + number_of_reviews, data = corr_select)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -221.30  -48.91  -17.36   25.30 1297.64 
+## 
+## Coefficients:
+##                                     Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept)                        117.39002    8.83253  13.291  &lt; 2e-16
+## accommodates                        26.95615    1.84178  14.636  &lt; 2e-16
+## room_typeRoom                      -68.93935    6.48292 -10.634  &lt; 2e-16
+## cancellation_policymoderate         -3.72384    7.12799  -0.522 0.601439
+## cancellation_policystrict           -4.09698    6.60994  -0.620 0.535454
+## cancellation_policysuper_strict_30 104.13649   18.69762   5.570 2.94e-08
+## availability_30                      1.01153    0.26258   3.852 0.000121
+## number_of_reviews                   -0.28245    0.07477  -3.778 0.000164
+##                                       
+## (Intercept)                        ***
+## accommodates                       ***
+## room_typeRoom                      ***
+## cancellation_policymoderate           
+## cancellation_policystrict             
+## cancellation_policysuper_strict_30 ***
+## availability_30                    ***
+## number_of_reviews                  ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 109.4 on 1783 degrees of freedom
+## Multiple R-squared:  0.3307, Adjusted R-squared:  0.3281 
+## F-statistic: 125.8 on 7 and 1783 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>AIC_model$anova</code></pre>
+<pre><code>##                    Step Df  Deviance Resid. Df Resid. Dev      AIC
+## 1                       NA        NA      1790   31879570 17530.42
+## 2        + accommodates -1 7849464.1      1789   24030106 17026.18
+## 3           + room_type -1 1698064.3      1788   22332042 16896.93
+## 4 + cancellation_policy -3  610699.8      1785   21721342 16853.27
+## 5     + availability_30 -1  213096.4      1784   21508246 16837.61
+## 6   + number_of_reviews -1  170779.8      1783   21337466 16825.33</code></pre>
+<p>However, as we see through the summary of the AIC model, cancellation policy levels moderate and strict are not statistically significant at 10% level. Cancellation policy is categorical data and eliminating these two options makes no sense. Thus, we will regroup the cancellation_policy variable in our last model. Since only super_strict_30 is statistically significant, we the other three responses in one group. Now, the two categories for cancellation_policy are Super Strict and Not Super Strict.</p>
+<pre class="r"><code># regroup the cancellation policy to two groups,super strict or not
+corr_select$cancellation_policy &lt;-ifelse(corr_select$cancellation_policy == &quot;super_strict_30&quot;,&quot;Super Strict&quot;,&quot;Not Super Strict&quot;)
+null_model_AIC &lt;- lm(price ~ 1 , data = corr_select)
+full_model_AIC &lt;- lm(price ~ . , data = corr_select)
+AIC_model &lt;- step(null_model_AIC, scope = list(lower = null_model_AIC, upper = full_model_AIC), k = 2, direction = &quot;forward&quot;)</code></pre>
+<pre><code>## Start:  AIC=17530.42
+## price ~ 1
+## 
+##                       Df Sum of Sq      RSS   AIC
+## + accommodates         1   7849464 24030106 17026
+## + room_type            1   6940252 24939318 17093
+## + availability_30      1    961562 30918008 17478
+## + cancellation_policy  1    928733 30950837 17480
+## + number_of_reviews    1    413836 31465734 17509
+## &lt;none&gt;                             31879570 17530
+## 
+## Step:  AIC=17026.18
+## price ~ accommodates
+## 
+##                       Df Sum of Sq      RSS   AIC
+## + room_type            1   1698064 22332042 16897
+## + cancellation_policy  1    885525 23144582 16961
+## + availability_30      1    357421 23672685 17001
+## + number_of_reviews    1    347367 23682739 17002
+## &lt;none&gt;                             24030106 17026
+## 
+## Step:  AIC=16896.93
+## price ~ accommodates + room_type
+## 
+##                       Df Sum of Sq      RSS   AIC
+## + cancellation_policy  1    594042 21738000 16851
+## + availability_30      1    361718 21970323 16870
+## + number_of_reviews    1    253989 22078053 16878
+## &lt;none&gt;                             22332042 16897
+## 
+## Step:  AIC=16850.64
+## price ~ accommodates + room_type + cancellation_policy
+## 
+##                     Df Sum of Sq      RSS   AIC
+## + number_of_reviews  1    218979 21519020 16834
+## + availability_30    1    209933 21528066 16835
+## &lt;none&gt;                           21738000 16851
+## 
+## Step:  AIC=16834.51
+## price ~ accommodates + room_type + cancellation_policy + number_of_reviews
+## 
+##                   Df Sum of Sq      RSS   AIC
+## + availability_30  1    176399 21342622 16822
+## &lt;none&gt;                         21519020 16834
+## 
+## Step:  AIC=16821.77
+## price ~ accommodates + room_type + cancellation_policy + number_of_reviews + 
+##     availability_30</code></pre>
+<pre class="r"><code>summary(AIC_model)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = price ~ accommodates + room_type + cancellation_policy + 
+##     number_of_reviews + availability_30, data = corr_select)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -221.44  -49.19  -17.22   26.08 1299.68 
+## 
+## Coefficients:
+##                                  Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)                     114.86699    7.94564  14.457  &lt; 2e-16 ***
+## accommodates                     26.87272    1.83657  14.632  &lt; 2e-16 ***
+## room_typeRoom                   -68.29050    6.38122 -10.702  &lt; 2e-16 ***
+## cancellation_policySuper Strict 107.38702   18.01353   5.961 3.01e-09 ***
+## number_of_reviews                -0.29015    0.07368  -3.938 8.52e-05 ***
+## availability_30                   0.99117    0.25805   3.841 0.000127 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 109.3 on 1785 degrees of freedom
+## Multiple R-squared:  0.3305, Adjusted R-squared:  0.3286 
+## F-statistic: 176.3 on 5 and 1785 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>AIC_model$anova</code></pre>
+<pre><code>##                    Step Df  Deviance Resid. Df Resid. Dev      AIC
+## 1                       NA        NA      1790   31879570 17530.42
+## 2        + accommodates -1 7849464.1      1789   24030106 17026.18
+## 3           + room_type -1 1698064.3      1788   22332042 16896.93
+## 4 + cancellation_policy -1  594042.1      1787   21738000 16850.64
+## 5   + number_of_reviews -1  218979.2      1786   21519020 16834.51
+## 6     + availability_30 -1  176398.8      1785   21342622 16821.77</code></pre>
+<p>The new model shows that the cancellation policy now is more significant than the previous model. Thus, we conclude this new model as our final model.</p>
+<p>The adjusted R^2 of our final model is approximately 0.351; that is, 35.1% of the variance in price of Airbnbs in Boston is explained by our model. Even though 35.1% is a not very high percentage, we think this model still has some special meaning for further analysis. In our analysis, we chose 5 variables to make the regression of price for about 4000 observations; we need more variables to get the more precise regression model. But at least for now, four of those five variables are statistically significant covariates we needed, and the final regression model we would use to test the validation is:</p>
+<p>‘Price = 26.697Accommondates -70.037room_type +107.697cancellation_policy+ 0.937availabilityy30 -0.240number of reviews’</p>
+</div>
+</div>
+</div>
+<div id="diagnostic-analysis" class="section level1">
+<h1>Diagnostic Analysis</h1>
+<p>Since the linear model is complete, we have a formula that we can use to predict price. However, we have to ensure that it is statistically significant and that the model is a good model for such prediction.</p>
+<div id="test-of-normality-for-standardized-residuals" class="section level2">
+<h2>Test of Normality for Standardized Residuals</h2>
+<p>Here, we visualized the standard residuals vs. the fitted value to check whether the model satisfies the statistical assumptions.</p>
+<div id="vs-price" class="section level3">
+<h3>vs price</h3>
+<pre class="r"><code># vs price
+boston.stdres = rstandard(AIC_model)
+plot(corr_select$price,boston.stdres,xlab=&quot;Price&quot;,ylab=&quot;Standardized Residuals&quot;,col=&quot;blue&quot;)
+abline(0, 0)
+abline(h=2,lty=2)
+abline(h=-2,lty=2)</code></pre>
+<p><img src="/Modeling_files/figure-html/unnamed-chunk-6-1.png" width="672" />
+### vs Fitted</p>
+<pre class="r"><code>plot(fitted(AIC_model),boston.stdres,xlab=&quot;Fitted Value&quot;,ylab=&quot;Standardized Residuals&quot;,col=&quot;blue&quot;)
+abline(0, 0)
+abline(h=2,lty=2)
+abline(h=-2,lty=2)</code></pre>
+<p><img src="/Modeling_files/figure-html/unnamed-chunk-7-1.png" width="672" />
+The scatter plots shows the standard residuals have a non-constant variance, which violates our statistical assumptions. Most of the points are scattered around zero, but small part of points have a big standardized residuals.</p>
+</div>
+</div>
+<div id="test-of-normality-for-standarized-residuals" class="section level2">
+<h2>Test of Normality for Standarized Residuals</h2>
+<div id="qqplots" class="section level3">
+<h3>qqplots</h3>
+<pre class="r"><code>qqnorm(boston.stdres, ylab=&quot;Standardized Residuals&quot;, xlab=&quot;Normal Scores&quot;,col=&quot;blue&quot;) 
+qqline(boston.stdres)</code></pre>
+<p><img src="/Modeling_files/figure-html/unnamed-chunk-8-1.png" width="672" />
+### histogram</p>
+<pre class="r"><code>hist(boston.stdres,100)</code></pre>
+<p><img src="/Modeling_files/figure-html/unnamed-chunk-9-1.png" width="672" />
+The qq plot shows that most of the data points are in the line, yet it has a heavy tail. The histograms of residuals looks fine and shows that that the bars are centered and symmetric around the mean, except a few bars in the right side are away from mean. In the future, we may try to use some method, like using weighted least squars or using transformation to fix this problem.</p>
+</div>
+</div>
+</div>
+<div id="validation" class="section level1">
+<h1>Validation</h1>
+<p>Our model was used to predict for the validation set.</p>
+<div id="plot-residuals" class="section level2">
+<h2>Plot residuals</h2>
+<p>A residual plot has been visualized of validation data fitting and training data fitting.</p>
+<pre class="r"><code># Residuals for training data
+ResMLS &lt;- resid(AIC_model)
+
+# Residuals for validation data
+DataSetValidation$cancellation_policy &lt;-ifelse(corr_select$cancellation_policy == &quot;super_strict_30&quot;,&quot;Super Strict&quot;,&quot;Not Super Strict&quot;)
+output&lt;-predict(AIC_model, se.fit = TRUE, newdata=data.frame(price=DataSetValidation$price, room_type=DataSetValidation$room_type, accommodates=DataSetValidation$accommodates, cancellation_policy=DataSetValidation$cancellation_policy,availability_30=DataSetValidation$availability_30,number_of_reviews=DataSetValidation$number_of_reviews))
+ResMLSValidation &lt;- DataSetValidation$price - output$fit
+
+# Plot residuals
+plot(DataSetTraining$price,ResMLS,xlab=&quot;price&quot;, ylab=&quot;Residuals&quot;, ylim=c(min(ResMLS,ResMLSValidation),max(ResMLS,ResMLSValidation)), col=c(&quot;blue&quot;), lty=0, cex=1, pch=19)
+points(DataSetValidation$price,ResMLSValidation,xlab=&quot;price&quot;, ylab=&quot;Residuals&quot;,xlim=c(0,7),col=&quot;red&quot;, lty=0, cex=1, pch=19)
+legend(800, 0, legend=c(&quot;Training&quot;,&quot;Validation&quot;), col=c(&quot;blue&quot;,&quot;red&quot;), lty=0, cex=1, pch=19)</code></pre>
+<p><img src="/Modeling_files/figure-html/unnamed-chunk-10-1.png" width="672" />
+The residual plot of model applied on validation data doesn’t look very promising, as there is a clear increasing pattern. We suspect there is a non-linear association between the response variable and some predictors so some variance in response would not be captured by our linear model.</p>
+</div>
+<div id="relative-mean-square-error-for-validation-data" class="section level2">
+<h2>Relative Mean Square Error for validation data</h2>
+<pre class="r"><code># Relative Mean Square Error for validation data
+mean((ResMLSValidation)^2) / mean((DataSetValidation$price)^2)</code></pre>
+<pre><code>## [1] 0.1920382</code></pre>
+</div>
+<div id="correlation-accuracy-table" class="section level2">
+<h2>Correlation Accuracy Table</h2>
+<pre class="r"><code>#correlation_accuracy
+actual_preds&lt;-data.frame(cbind(actuals=DataSetValidation$price,predicteds=output$fit))
+correlation_accuracy&lt;-cor(actual_preds)
+correlation_accuracy</code></pre>
+<pre><code>##              actuals predicteds
+## actuals    1.0000000  0.6282116
+## predicteds 0.6282116  1.0000000</code></pre>
+<p>A simple correlation between the actual and the predicted values can be used as a form of accuracy measure. A higher correlation accuracy implies that the actuals and predicted values have similar directional movement. In our case, the correlation of accuracy is approxiamtely 60%, indicating that, just over half of the time, the predicted values and actual values moved in a similar direction.</p>
+</div>
+</div>

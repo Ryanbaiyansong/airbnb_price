@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>R Markdown on great A</title>
+    <link>/tags/r-markdown/</link>
+    <description>Recent content in R Markdown on great A</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 02 Oct 2019 21:13:14 -0500</lastBuildDate>
+    
+	<atom:link href="/tags/r-markdown/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Hello R Markdown</title>
+      <link>/10/02/hello-r-markdown/</link>
+      <pubDate>Wed, 02 Oct 2019 21:13:14 -0500</pubDate>
+      
+      <guid>/10/02/hello-r-markdown/</guid>
+      <description>A quick example of an R markdown document</description>
+    </item>
+    
+    <item>
+      <title>A .Rmarkdown file</title>
+      <link>/09/25/a-.rmarkdown-file/</link>
+      <pubDate>Wed, 25 Sep 2019 21:13:14 -0500</pubDate>
+      
+      <guid>/09/25/a-.rmarkdown-file/</guid>
+      <description>We can also write documents with the &lt;code&gt;.Rmarkdown&lt;/code&gt; extension</description>
+    </item>
+    
+  </channel>
+</rss>

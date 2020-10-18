@@ -1,0 +1,35 @@
+---
+title: EDA - Listing Descriptions
+author: Kelly Huang
+date: '2019-11-17'
+slug: eda
+categories: []
+tags: []
+description: ''
+featured_image: ''
+---
+
+I wanted to begin our investigation of the textual data included in our dataset. One important aspect of an AirBnB listing is the description. For this EDA, I decided to explore how the length of a description is related to how popular a listing may be with guests. Two variables that are related to this are Number of Reviews, which implies the number of people who have stayed at this listing, and Availability, which will indicate how many days the are open for the listing, with less availability suggesting more bookings. 
+
+```{r echo=T, results='hide', message=F, warning=F}
+library(readr)
+library(tidyverse)
+boston <- read_csv('listings.csv')
+boston <- select(boston, summary, description, review_scores_rating, availability_30, availability_60, availability_90, availability_365, number_of_reviews)
+boston <- mutate(boston, descriptionWords = str_count(description, ' ')+1, sumWords=str_count(summary, ' ')+1)
+
+```
+```{r}
+boston %>% subset(number_of_reviews > 0) %>% ggplot(aes(descriptionWords, number_of_reviews)) + geom_boxplot(aes(group = cut_width(descriptionWords, 50)))
+```
+
+I considered the fact that some listings may not have any reviews due to how recently they were posted. Thus I only considered the listings that have at least one review. to From this first plot, it appears that most of the listings in our datset have very few reviews. It does appear that the listings with longer descriptions have slightly more reviews on average. 
+
+```{r}
+boston %>% ggplot(aes(descriptionWords, availability_90)) + geom_boxplot(aes(group = cut_width(descriptionWords, 25)))
+```
+
+Next, I looked at how the number of words in a desciption relates to availability in the next three months. It appears that listings with shorter descriptions tend to have less availability. It seems as though listings with longer descriptions have more availability, and thus less booking.
+
+These plots seems to imply that listings with longer descriptions have more reviews but also more availability. This seems contradictory. Other variables that relate to a listing's popularity and bookings may be needed to explain. 
+

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    
+    <title>great A  | EDA - Listing Descriptions</title>
+    <meta name="viewport" content="width=device-width,minimum-scale=1">
+    <meta name="generator" content="Hugo 0.58.3" />
+    
+    
+      <META NAME="ROBOTS" CONTENT="NOINDEX, NOFOLLOW">
+    
+
+    
+    
+      <link href="/dist/css/app.d98f2eb6bcd1eaedb7edf166bd16af26.css" rel="stylesheet">
+    
+
+    
+
+    
+      
+<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+
+    
+
+    
+    
+    <meta property="og:title" content="EDA - Listing Descriptions" />
+<meta property="og:description" content="I wanted to begin our investigation of the textual data included in our dataset. One important aspect of an AirBnB listing is the description. For this EDA, I decided to explore how the length of a description is related to how popular a listing may be with guests. Two variables that are related to this are Number of Reviews, which implies the number of people who have stayed at this listing, and Availability, which will indicate how many days the are open for the listing, with less availability suggesting more bookings." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/11/17/eda/" />
+<meta property="article:published_time" content="2019-11-17T00:00:00+00:00" />
+<meta property="article:modified_time" content="2019-11-17T00:00:00+00:00" />
+<meta itemprop="name" content="EDA - Listing Descriptions">
+<meta itemprop="description" content="I wanted to begin our investigation of the textual data included in our dataset. One important aspect of an AirBnB listing is the description. For this EDA, I decided to explore how the length of a description is related to how popular a listing may be with guests. Two variables that are related to this are Number of Reviews, which implies the number of people who have stayed at this listing, and Availability, which will indicate how many days the are open for the listing, with less availability suggesting more bookings.">
+
+
+<meta itemprop="datePublished" content="2019-11-17T00:00:00&#43;00:00" />
+<meta itemprop="dateModified" content="2019-11-17T00:00:00&#43;00:00" />
+<meta itemprop="wordCount" content="287">
+
+
+
+<meta itemprop="keywords" content="" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="EDA - Listing Descriptions"/>
+<meta name="twitter:description" content="I wanted to begin our investigation of the textual data included in our dataset. One important aspect of an AirBnB listing is the description. For this EDA, I decided to explore how the length of a description is related to how popular a listing may be with guests. Two variables that are related to this are Number of Reviews, which implies the number of people who have stayed at this listing, and Availability, which will indicate how many days the are open for the listing, with less availability suggesting more bookings."/>
+
+
+
+  </head>
+
+  <body class="ma0 avenir bg-near-white">
+
+    
+   
+  
+
+  <header>
+    <div class="bg-navy">
+      <nav class="pv3 ph3 ph4-ns" role="navigation">
+  <div class="flex-l justify-between items-center center">
+    <a href="/" class="f3 fw2 hover-white no-underline white-90 dib">
+      great A
+    </a>
+    <div class="flex-l items-center">
+      
+
+      
+        <ul class="pl0 mr3">
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="/about/" title="About page">
+              About
+            </a>
+          </li>
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="/big_picture/" title="Big Picture page">
+              Big Picture
+            </a>
+          </li>
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="/data/" title="Data page">
+              Data
+            </a>
+          </li>
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="/eda/" title="EDA page">
+              EDA
+            </a>
+          </li>
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="/modeling/" title="Modeling page">
+              Modeling
+            </a>
+          </li>
+          
+          <li class="list f5 f4-ns fw4 dib pr3">
+            <a class="hover-white no-underline white-90" href="/post/" title="Posts page">
+              Posts
+            </a>
+          </li>
+          
+        </ul>
+      
+      
+
+
+
+
+
+
+
+
+
+
+
+    </div>
+  </div>
+</nav>
+
+    </div>
+  </header>
+
+
+
+    <main class="pb7" role="main">
+      
+  
+  <article class="flex-l flex-wrap justify-between mw8 center ph3">
+
+    <header class="mt4 w-100">
+      <p class="f6 b helvetica tracked">
+          
+        POSTS
+      </p>
+      <h1 class="f1 athelas mb1">EDA - Listing Descriptions</h1>
+      
+      <p class="tracked">
+         By <strong>Kelly Huang</strong>
+      </p>
+      
+      
+      <time class="f6 mv4 dib tracked" datetime="2019-11-17T00:00:00Z">November 17, 2019</time>
+      
+      
+    </header>
+
+    <section class="nested-copy-line-height lh-copy serif f4 nested-links nested-img mid-gray pr4-l w-two-thirds-l">
+
+
+<p>I wanted to begin our investigation of the textual data included in our dataset. One important aspect of an AirBnB listing is the description. For this EDA, I decided to explore how the length of a description is related to how popular a listing may be with guests. Two variables that are related to this are Number of Reviews, which implies the number of people who have stayed at this listing, and Availability, which will indicate how many days the are open for the listing, with less availability suggesting more bookings.</p>
+<pre class="r"><code>library(readr)
+library(tidyverse)
+boston &lt;- read_csv(&#39;listings.csv&#39;)
+boston &lt;- select(boston, summary, description, review_scores_rating, availability_30, availability_60, availability_90, availability_365, number_of_reviews)
+boston &lt;- mutate(boston, descriptionWords = str_count(description, &#39; &#39;)+1, sumWords=str_count(summary, &#39; &#39;)+1)</code></pre>
+<pre class="r"><code>boston %&gt;% subset(number_of_reviews &gt; 0) %&gt;% ggplot(aes(descriptionWords, number_of_reviews)) + geom_boxplot(aes(group = cut_width(descriptionWords, 50)))</code></pre>
+<p><img src="/post/2019-11-17-eda_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>I considered the fact that some listings may not have any reviews due to how recently they were posted. Thus I only considered the listings that have at least one review. to From this first plot, it appears that most of the listings in our datset have very few reviews. It does appear that the listings with longer descriptions have slightly more reviews on average.</p>
+<pre class="r"><code>boston %&gt;% ggplot(aes(descriptionWords, availability_90)) + geom_boxplot(aes(group = cut_width(descriptionWords, 25)))</code></pre>
+<p><img src="/post/2019-11-17-eda_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>Next, I looked at how the number of words in a desciption relates to availability in the next three months. It appears that listings with shorter descriptions tend to have less availability. It seems as though listings with longer descriptions have more availability, and thus less booking.</p>
+<p>These plots seems to imply that listings with longer descriptions have more reviews but also more availability. This seems contradictory. Other variables that relate to a listing’s popularity and bookings may be needed to explain.</p>
+<ul class="pa0">
+  
+</ul>
+<div class="mt6">
+      
+      
+      </div>
+    </section>
+
+    <aside class="w-30-l mt6-l">
+
+
+
+
+</aside>
+
+  </article>
+
+    </main>
+    <footer class="bg-navy bottom-0 w-100 pa3" role="contentinfo">
+  <div class="flex justify-between">
+  <a class="f4 fw4 hover-white no-underline white-70 dn dib-ns pv2 ph3" href="/" >
+    &copy; 2019 great A
+  </a>
+    <div>
+
+
+
+
+
+
+
+
+
+
+</div>
+  </div>
+</footer>
+
+    
+
+  <script src="/dist/js/app.3fc0f988d21662902933.js"></script>
+
+
+
+    
+<script src="/js/math-code.js"></script>
+<script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+
+
+  </body>
+</html>
